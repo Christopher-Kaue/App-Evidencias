@@ -7,3 +7,4 @@ web/.next
 vendor
 storage/uploads
 uploads
+.vercel

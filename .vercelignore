@@ -1,0 +1,8 @@
+uploads
+web/node_modules
+web/.next
+web/.turbo
+node_modules
+.next
+.vercel
+database/*.sql
