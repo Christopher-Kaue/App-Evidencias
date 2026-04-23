@@ -1,0 +1,9 @@
+node_modules
+.next
+.env.local
+api/.env
+web/node_modules
+web/.next
+vendor
+storage/uploads
+uploads
