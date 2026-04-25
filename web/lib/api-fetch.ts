@@ -18,7 +18,7 @@ export async function apiFetch(path: string, init?: RequestInit): Promise<Respon
   } catch (e) {
     if (e instanceof TypeError) {
       throw new Error(
-        `Nao foi possivel conectar a API (${base}). Em URLs de preview/deploy da Vercel (varios hifens no host), defina NEXT_PUBLIC_API_BASE_URL ou NEXT_PUBLIC_API_HOST com a URL real do projeto PHP. Verifique tambem CORS, SSL/DNS e se o deploy da API esta ativo.`
+        `Nao foi possivel conectar a API (${base}). Na Vercel o app usa rewrite same-origin (/api-proxy). Verifique deploy do front e do PHP, SSL/DNS e se o painel da API nao bloqueia o trafego. Para chamar o PHP direto do navegador, defina NEXT_PUBLIC_API_VIA_PROXY=0 e NEXT_PUBLIC_API_BASE_URL.`
       );
     }
     throw e;

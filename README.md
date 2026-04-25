@@ -57,11 +57,10 @@ Use **dois projetos** (recomendado): um para o PHP e outro para o Next.js.
 2. Em **Settings > General > Root Directory**, defina **`web`** (obrigatorio). Nao use a raiz do repositorio para o frontend: copiar `web/.next` para a raiz quebra os caminhos das Lambdas (erros como `_global-error` / segmentos `.rsc`).
 3. **Framework Preset**: Next.js (ou deixe autodetect; existe `web/vercel.json` com `"framework": "nextjs"`).
 4. **Build Command** padrao `next build` (ja inclui copia `out` -> `public` na Vercel). Se o painel exigir **Output Directory** = `public`, deixe assim: na Vercel o app usa `output: "export"` e o script preenche `public/` automaticamente.
-5. **URL da API no frontend** (`web/vercel.json` define `NEXT_PUBLIC_API_BASE_URL` para deploys Vercel deste repo; ajuste se o host do PHP for outro):
-   - **Producao Vercel**: se o projeto Next estiver em `https://MEUAPP.vercel.app`, o codigo assume a API em `https://MEUAPP-api.vercel.app` (PHP com o mesmo prefixo + sufixo `-api`). Renomeie o projeto PHP na Vercel para seguir esse padrao ou defina a variavel abaixo.
-   - **Preview ou URL de deploy unica**: com o `env` em `web/vercel.json`, previews ja recebem a mesma base da API; em forks, defina `NEXT_PUBLIC_API_BASE_URL` (ou `NEXT_PUBLIC_API_HOST`) no painel ou no `vercel.json`.
-   - **Deploy preview** (URL com `-git-`): idem; sem URL fixa, o app nao adivinha a API nesses hosts.
-   - **Local**: usa `http://localhost/app-evidencias` automaticamente; pode sobrescrever com `NEXT_PUBLIC_API_BASE_URL` em `web/.env.local`.
+5. **URL da API no frontend**:
+   - **Na Vercel** (build com `VERCEL=1`): o app usa **mesma origem** + rewrite em `web/vercel.json` (`/api-proxy/*` → `https://<seu-php>.vercel.app/api/*`). Ajuste o `destination` do rewrite se o host do PHP mudar. Evita CORS e bloqueios a chamadas cross-origin.
+   - **Modo direto ao PHP** (sem proxy): no painel do projeto Next, defina `NEXT_PUBLIC_API_VIA_PROXY=0` e `NEXT_PUBLIC_API_BASE_URL=https://<seu-php>.vercel.app` (sem barra final).
+   - **Fora da Vercel** (local): `http://localhost/app-evidencias` por padrao; sobrescreva com `NEXT_PUBLIC_API_BASE_URL` em `web/.env.local`.
 
 ### Login de teste (apos rodar `database/schema.sql` ou `database/migrate_senhas_teste_Senha123.sql`)
 

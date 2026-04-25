@@ -1,7 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_API_BASE_URL": "https://api-christopher-kaues-projects.vercel.app"
-  }
+  "rewrites": [
+    {
+      "source": "/api-proxy/:path*",
+      "destination": "https://api-christopher-kaues-projects.vercel.app/api/:path*"
+    }
+  ]
 }

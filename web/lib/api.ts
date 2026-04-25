@@ -1,5 +1,7 @@
 const trimSlash = (s: string): string => s.trim().replace(/\/+$/, "");
 
+const useEdgeProxy = process.env.NEXT_PUBLIC_API_VIA_PROXY === "1";
+
 /**
  * URLs geradas pela Vercel (preview ou deploy unico) costumam ser
  * `{projeto}-{hash}-{time}.vercel.app` — varios segmentos. Nao devemos acrescentar `-api`
@@ -18,8 +20,17 @@ function isLikelyVercelDeploymentHostname(slug: string): boolean {
  * 3) localhost → XAMPP (README)
  * 4) Producao Vercel: alias estavel `https://<slug>.vercel.app` → `https://<slug>-api.vercel.app`
  * 5) Preview (VERCEL_ENV), `-git-` no slug, ou hostname de deploy longo: "" — defina NEXT_PUBLIC_API_BASE_URL
+ *
+ * Modo proxy (NEXT_PUBLIC_API_VIA_PROXY=1, build na Vercel): mesma origem + rewrite `/api-proxy/*` → PHP.
  */
 export function getApiBaseUrl(): string {
+  if (useEdgeProxy) {
+    if (typeof window !== "undefined") {
+      return trimSlash(window.location.origin);
+    }
+    return "";
+  }
+
   const fromEnv = trimSlash(process.env.NEXT_PUBLIC_API_BASE_URL ?? "");
   if (fromEnv) return fromEnv;
 
@@ -59,12 +70,14 @@ export function getApiBaseUrl(): string {
 }
 
 export function isApiBaseConfigured(): boolean {
-  return Boolean(getApiBaseUrl());
+  return useEdgeProxy || Boolean(getApiBaseUrl());
 }
 
 export function apiUrl(path: string): string {
+  const raw = path.startsWith("/") ? path : `/${path}`;
+  const p =
+    useEdgeProxy && raw.startsWith("/api/") ? `/api-proxy${raw.slice(4)}` : raw;
   const base = trimSlash(getApiBaseUrl());
-  const p = path.startsWith("/") ? path : `/${path}`;
   if (!base) return p;
   return `${base}${p}`;
 }
