@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "npm --prefix web run dev",
-    "build": "npm --prefix web run build",
+    "build": "npm --prefix web run build && node scripts/sync-next-output.mjs",
     "start": "npm --prefix web run start",
     "lint": "npm --prefix web run lint"
   },
