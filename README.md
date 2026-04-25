@@ -50,6 +50,7 @@ Use **dois projetos** (recomendado): um para o PHP e outro para o Next.js.
 3. **Framework Preset**: Other (sem build command; o `vercel.json` define o runtime `vercel-php`).
 4. Em **Environment Variables**, cadastre `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` (o MySQL precisa aceitar conexoes da internet, por exemplo Aiven, PlanetScale ou VPS com firewall liberado para a Vercel). Opcional: `PUBLIC_APP_URL` com a URL publica do proprio projeto PHP (ex.: `https://seu-api.vercel.app`) para links de upload corretos.
 5. As URLs ficam em `https://<seu-projeto-api>.vercel.app/api/*.php`.
+6. **Deployment Protection (obrigatorio se login/rewrite falhar com 403)**: no painel do **projeto PHP**, abra **Settings → Deployment Protection**. Desative *Standard Protection* nos ambientes em que a API deva ser publica, ou use **Protection Bypass for Automation** (conforme a [documentacao Vercel](https://vercel.com/docs/deployments/deployment-protection)). Com a protecao ativa, pedidos vindos do browser (CORS direto) ou rewrites a partir do projeto Next podem receber **403** na borda (`X-Vercel-Mitigated: deny`) e o front mostra erro de rede. **Isto so se altera no painel** — nao existe equivalente no `vercel.json` do PHP.
 
 **Web (Next.js)**
 
@@ -58,8 +59,9 @@ Use **dois projetos** (recomendado): um para o PHP e outro para o Next.js.
 3. **Framework Preset**: Next.js (ou deixe autodetect; existe `web/vercel.json` com `"framework": "nextjs"`).
 4. **Build Command** padrao `next build` (ja inclui copia `out` -> `public` na Vercel). Se o painel exigir **Output Directory** = `public`, deixe assim: na Vercel o app usa `output: "export"` e o script preenche `public/` automaticamente.
 5. **URL da API no frontend**:
-   - **Na Vercel** (build com `VERCEL=1`): o app usa **mesma origem** + rewrite em `web/vercel.json` (`/api-proxy/*` → `https://<seu-php>.vercel.app/api/*`). Ajuste o `destination` do rewrite se o host do PHP mudar. Evita CORS e bloqueios a chamadas cross-origin.
-   - **Modo direto ao PHP** (sem proxy): no painel do projeto Next, defina `NEXT_PUBLIC_API_VIA_PROXY=0` e `NEXT_PUBLIC_API_BASE_URL=https://<seu-php>.vercel.app` (sem barra final).
+   - **Rewrite (padrao no repo)**: em `web/vercel.json`, o `destination` do rewrite **deve** ser o mesmo URL base do projeto PHP que abre no browser (alias de producao, **sem** barra final), no formato `https://<seu-php>.vercel.app/api/:path*` — neste repositorio: `https://api-christopher-kaues-projects.vercel.app/api/:path*`. Se mudar o nome do projeto PHP na Vercel, atualize esse `destination` e o valor `DEFAULT_VERCEL_PHP_API` em `web/next.config.ts`.
+   - **Modo proxy (recomendado na Vercel)**: nao defina `NEXT_PUBLIC_API_VIA_PROXY` no painel (ou remova). No build com `VERCEL=1`, o `next.config.ts` define `NEXT_PUBLIC_API_VIA_PROXY=1` e o browser chama `/<origem>/api-proxy/...` (mesma origem, sem CORS ao PHP).
+   - **Modo direto ao PHP** (CORS cross-origin): no painel do projeto Next, defina `NEXT_PUBLIC_API_VIA_PROXY=0` e `NEXT_PUBLIC_API_BASE_URL=https://<seu-php>.vercel.app` (sem barra final, **sem** sufixo `/api`). Exige que o projeto PHP permita origem do front (CORS ja esta no PHP) e que **Deployment Protection** esteja desativado no PHP (passo 6 acima).
    - **Fora da Vercel** (local): `http://localhost/app-evidencias` por padrao; sobrescreva com `NEXT_PUBLIC_API_BASE_URL` em `web/.env.local`.
 
 ### Login de teste (apos rodar `database/schema.sql` ou `database/migrate_senhas_teste_Senha123.sql`)
