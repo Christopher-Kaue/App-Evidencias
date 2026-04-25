@@ -46,7 +46,7 @@ Use **dois projetos** (recomendado): um para o PHP e outro para o Next.js.
 **API (PHP)**
 
 1. Crie um projeto importando o mesmo repositorio.
-2. Em **Settings > General > Root Directory**, defina `api`.
+2. Em **Settings > General > Root Directory**, defina exatamente `api` (pasta do PHP no repo). Confirme no painel que nao ficou vazio: se estiver na raiz do monorepo, as rotas `/api/*.php` devolvem **404** na Vercel.
 3. **Framework Preset**: Other (sem build command; o `vercel.json` define o runtime `vercel-php`).
 4. Em **Environment Variables**, cadastre `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` (o MySQL precisa aceitar conexoes da internet, por exemplo Aiven, PlanetScale ou VPS com firewall liberado para a Vercel). Opcional: `PUBLIC_APP_URL` com a URL publica do proprio projeto PHP (ex.: `https://seu-api.vercel.app`) para links de upload corretos.
 5. As URLs ficam em `https://<seu-projeto-api>.vercel.app/api/*.php`.
