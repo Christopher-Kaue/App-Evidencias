@@ -5,7 +5,7 @@ require_once __DIR__ . '/_lib/auth.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST,OPTIONS');
-header('Access-Control-Allow-Headers: X-Role, X-User-Id');
+header('Access-Control-Allow-Headers: Content-Type, X-Role, X-User-Id');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
@@ -70,9 +70,14 @@ try {
         json_response(['message' => 'Nao foi possivel salvar o arquivo.'], 500);
     }
 
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $url = $scheme . '://' . $host . '/app-evidencias/uploads/' . $fileName;
+    $base = getenv('PUBLIC_APP_URL');
+    if ($base === false || trim((string) $base) === '') {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $base = $scheme . '://' . $host;
+    }
+    $base = rtrim((string) $base, '/');
+    $url = $base . '/uploads/' . $fileName;
     json_response(['message' => 'Upload realizado com sucesso.', 'data' => ['url' => $url]], 201);
 } catch (Throwable $e) {
     json_response(['message' => 'Erro interno.', 'detail' => $e->getMessage()], 500);

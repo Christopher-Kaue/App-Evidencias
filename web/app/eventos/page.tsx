@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { apiUrl } from "../../lib/api";
+import { apiFetch, apiRequest, readApiJson } from "../../lib/api-fetch";
 import { AppShell } from "../components/AppShell";
 import { authHeaders, getSessionUser, SessionUser } from "../../lib/session";
 
@@ -36,13 +36,23 @@ export default function EventosPage() {
     const session = getSessionUser();
     if (!session) return;
     setUser(session);
-    const res = await fetch(apiUrl("/api/events.php"), { headers: authHeaders(session) });
-    const json = await res.json();
-    setEventos(json.data || []);
+    setErro("");
+    try {
+      const json = await apiRequest("/api/events.php", { headers: authHeaders(session) });
+      if (!json.ok) {
+        setErro((json.message || "Nao foi possivel carregar os eventos.") + (json.detail ? ` (${json.detail})` : ""));
+        setEventos([]);
+        return;
+      }
+      setEventos((json.data as Evento[]) || []);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Nao foi possivel carregar os eventos.");
+      setEventos([]);
+    }
   };
 
   useEffect(() => {
-    carregar().catch(() => setErro("Nao foi possivel carregar os eventos."));
+    void carregar();
   }, []);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -53,15 +63,14 @@ export default function EventosPage() {
     const session = getSessionUser();
     if (!session) return;
 
-    const res = await fetch(apiUrl("/api/events.php"), {
+    const json = await apiRequest("/api/events.php", {
       method: editando ? "PUT" : "POST",
       headers: authHeaders(session),
       body: JSON.stringify(payload)
     });
 
-    const json = await res.json();
-    if (!res.ok) {
-      setErro(json.message || "Falha ao salvar evento.");
+    if (!json.ok) {
+      setErro((json.message || "Falha ao salvar evento.") + (json.detail ? ` (${json.detail})` : ""));
       return;
     }
 
@@ -85,13 +94,12 @@ export default function EventosPage() {
   const excluir = async (id: number) => {
     const session = getSessionUser();
     if (!session || session.perfil !== "coordenador") return;
-    const res = await fetch(apiUrl(`/api/events.php?id=${id}`), {
+    const json = await apiRequest(`/api/events.php?id=${id}`, {
       method: "DELETE",
       headers: authHeaders(session)
     });
-    if (!res.ok) {
-      const json = await res.json();
-      setErro(json.message || "Falha ao excluir evento.");
+    if (!json.ok) {
+      setErro((json.message || "Falha ao excluir evento.") + (json.detail ? ` (${json.detail})` : ""));
       return;
     }
     await carregar();
@@ -105,7 +113,7 @@ export default function EventosPage() {
     try {
       const fd = new FormData();
       fd.append("arquivo", file);
-      const res = await fetch(apiUrl("/api/upload.php"), {
+      const res = await apiFetch("/api/upload.php", {
         method: "POST",
         headers: {
           "X-Role": session.perfil,
@@ -113,12 +121,13 @@ export default function EventosPage() {
         },
         body: fd
       });
-      const json = await res.json();
-      if (!res.ok) {
-        setErro(json.message || "Falha no upload.");
+      const json = await readApiJson(res);
+      if (!json.ok) {
+        setErro((json.message || "Falha no upload.") + (json.detail ? ` (${json.detail})` : ""));
         return;
       }
-      const url = json?.data?.url as string | undefined;
+      const data = json.data as { url?: string } | undefined;
+      const url = data?.url;
       if (url) {
         setMidias((prev) => [...prev, url]);
       }

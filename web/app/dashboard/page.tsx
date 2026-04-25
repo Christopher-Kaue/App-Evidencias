@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppShell } from "../components/AppShell";
-import { apiUrl } from "../../lib/api";
+import { apiRequest } from "../../lib/api-fetch";
 import { authHeaders, getSessionUser, SessionUser } from "../../lib/session";
 
 type Relatorio = {
@@ -20,10 +20,23 @@ export default function DashboardPage() {
     const session = getSessionUser();
     if (!session) return;
     setUser(session);
-    fetch(apiUrl("/api/reports.php"), { headers: authHeaders(session) })
-      .then((res) => res.json())
-      .then((json) => setDados(json.data))
-      .catch(() => setDados(null));
+    let cancelled = false;
+    (async () => {
+      try {
+        const json = await apiRequest("/api/reports.php", { headers: authHeaders(session) });
+        if (cancelled) return;
+        if (json.ok && json.data) {
+          setDados(json.data as Relatorio);
+        } else {
+          setDados(null);
+        }
+      } catch {
+        if (!cancelled) setDados(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiUrl, isApiBaseConfigured } from "../lib/api";
+import { isApiBaseConfigured } from "../lib/api";
+import { apiFetch, readApiJson } from "../lib/api-fetch";
 import { setSessionUser, type SessionUser } from "../lib/session";
 
 export default function LoginPage() {
@@ -29,24 +30,15 @@ export default function LoginPage() {
         return;
       }
 
-      const res = await fetch(apiUrl("/api/login.php"), {
+      const res = await apiFetch("/api/login.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
 
-      const text = await res.text();
-      let json: { message?: string; detail?: string; data?: unknown } = {};
-      try {
-        json = text ? (JSON.parse(text) as typeof json) : {};
-      } catch {
-        setErro(
-          `Resposta invalida do servidor (${res.status}). Confirme NEXT_PUBLIC_API_BASE_URL e se a API PHP esta no ar.`
-        );
-        return;
-      }
+      const json = await readApiJson(res);
 
-      if (!res.ok) {
+      if (!json.ok) {
         const extra = json.detail ? ` (${json.detail})` : "";
         setErro((json.message || "Falha no login.") + extra);
         return;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { apiUrl } from "../../lib/api";
+import { apiRequest } from "../../lib/api-fetch";
 import { AppShell } from "../components/AppShell";
 import { authHeaders, getSessionUser, SessionUser } from "../../lib/session";
 
@@ -31,25 +31,34 @@ export default function RelatoriosPage() {
     const session = getSessionUser();
     if (!session) return;
     setUser(session);
-    const res = await fetch(apiUrl("/api/reports.php"), { headers: authHeaders(session) });
-    const json = await res.json();
-    setDados(json.data);
+    setErro("");
+    try {
+      const json = await apiRequest("/api/reports.php", { headers: authHeaders(session) });
+      if (!json.ok) {
+        setErro((json.message || "Falha ao carregar relatorios.") + (json.detail ? ` (${json.detail})` : ""));
+        setDados(null);
+        return;
+      }
+      setDados(json.data as Relatorio);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Falha ao carregar relatorios.");
+      setDados(null);
+    }
   };
 
   useEffect(() => {
-    carregar().catch(() => setDados(null));
+    void carregar();
   }, []);
 
   const excluirRelatorio = async (id: number) => {
     const session = getSessionUser();
     if (!session || session.perfil !== "coordenador") return;
-    const res = await fetch(apiUrl(`/api/reports.php?id=${id}`), {
+    const json = await apiRequest(`/api/reports.php?id=${id}`, {
       method: "DELETE",
       headers: authHeaders(session)
     });
-    if (!res.ok) {
-      const json = await res.json();
-      setErro(json.message || "Falha ao excluir relatorio.");
+    if (!json.ok) {
+      setErro((json.message || "Falha ao excluir relatorio.") + (json.detail ? ` (${json.detail})` : ""));
       return;
     }
     await carregar();
@@ -58,14 +67,13 @@ export default function RelatoriosPage() {
   const salvarRelatorio = async (evento: Relatorio["eventos"][number]) => {
     const session = getSessionUser();
     if (!session || session.perfil !== "coordenador") return;
-    const res = await fetch(apiUrl("/api/reports.php"), {
+    const json = await apiRequest("/api/reports.php", {
       method: "PUT",
       headers: authHeaders(session),
       body: JSON.stringify(evento)
     });
-    if (!res.ok) {
-      const json = await res.json();
-      setErro(json.message || "Falha ao editar relatorio.");
+    if (!json.ok) {
+      setErro((json.message || "Falha ao editar relatorio.") + (json.detail ? ` (${json.detail})` : ""));
       return;
     }
     setEditandoId(null);
@@ -79,7 +87,8 @@ export default function RelatoriosPage() {
           <h2 style={{ marginTop: 0 }}>
             {user?.perfil === "coordenador" ? "Relatorios gerais da coordenacao" : "Relatorios dos seus eventos"}
           </h2>
-          {!dados && <p>Carregando...</p>}
+          {!dados && !erro && <p>Carregando...</p>}
+          {!dados && erro && <p className="error-text">{erro}</p>}
           {dados && (
             <div className="grid grid-3">
               <div className="card"><strong>Total de eventos</strong><p>{dados.total_eventos}</p></div>

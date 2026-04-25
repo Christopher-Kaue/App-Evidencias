@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { apiUrl } from "../../lib/api";
+import { apiRequest } from "../../lib/api-fetch";
 import { AppShell } from "../components/AppShell";
 import { authHeaders, getSessionUser, SessionUser } from "../../lib/session";
 
@@ -17,13 +17,23 @@ export default function UsuariosPage() {
     const session = getSessionUser();
     if (!session) return;
     setUser(session);
-    const res = await fetch(apiUrl("/api/users.php"), { headers: authHeaders(session) });
-    const json = await res.json();
-    setUsuarios(json.data || []);
+    setErro("");
+    try {
+      const json = await apiRequest("/api/users.php", { headers: authHeaders(session) });
+      if (!json.ok) {
+        setErro((json.message || "Falha ao carregar usuarios.") + (json.detail ? ` (${json.detail})` : ""));
+        setUsuarios([]);
+        return;
+      }
+      setUsuarios((json.data as Usuario[]) || []);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Falha ao carregar usuarios.");
+      setUsuarios([]);
+    }
   };
 
   useEffect(() => {
-    carregar().catch(() => setErro("Falha ao carregar usuarios."));
+    void carregar();
   }, []);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -33,14 +43,13 @@ export default function UsuariosPage() {
     const fd = new FormData(e.currentTarget);
     const payload = Object.fromEntries(fd.entries());
 
-    const res = await fetch(apiUrl("/api/users.php"), {
+    const json = await apiRequest("/api/users.php", {
       method: editando ? "PUT" : "POST",
       headers: authHeaders(session),
       body: JSON.stringify(payload)
     });
-    const json = await res.json();
-    if (!res.ok) {
-      setErro(json.message || "Falha ao salvar usuario.");
+    if (!json.ok) {
+      setErro((json.message || "Falha ao salvar usuario.") + (json.detail ? ` (${json.detail})` : ""));
       return;
     }
     e.currentTarget.reset();
@@ -51,13 +60,12 @@ export default function UsuariosPage() {
   const excluir = async (id: number) => {
     const session = getSessionUser();
     if (!session || session.perfil !== "coordenador") return;
-    const res = await fetch(apiUrl(`/api/users.php?id=${id}`), {
+    const json = await apiRequest(`/api/users.php?id=${id}`, {
       method: "DELETE",
       headers: authHeaders(session)
     });
-    if (!res.ok) {
-      const json = await res.json();
-      setErro(json.message || "Falha ao excluir usuario.");
+    if (!json.ok) {
+      setErro((json.message || "Falha ao excluir usuario.") + (json.detail ? ` (${json.detail})` : ""));
       return;
     }
     await carregar();
