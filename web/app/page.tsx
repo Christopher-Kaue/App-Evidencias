@@ -63,7 +63,8 @@ export default function LoginPage() {
         <p>Entre como professor ou coordenador para gerenciar eventos academicos.</p>
         {semApiUrl && (
           <p className="error-text" role="alert">
-            URL da API nao detectada (ex.: deploy preview). Defina <code>NEXT_PUBLIC_API_BASE_URL</code> na Vercel e redeploy.
+            URL da API nao detectada (ex.: deploy preview). Defina <code>NEXT_PUBLIC_API_BASE_URL</code> ou{" "}
+            <code>NEXT_PUBLIC_API_HOST</code> na Vercel e redeploy.
           </p>
         )}
         <form onSubmit={onSubmit} className="grid">

@@ -8,7 +8,21 @@ export async function apiFetch(path: string, init?: RequestInit): Promise<Respon
   if (!base) {
     throw new Error(getApiConfigErrorMessage());
   }
-  return fetch(apiUrl(path), init);
+  const url = apiUrl(path);
+  try {
+    return await fetch(url, {
+      mode: "cors",
+      cache: "no-store",
+      ...init
+    });
+  } catch (e) {
+    if (e instanceof TypeError) {
+      throw new Error(
+        `Nao foi possivel conectar a API (${base}). Verifique a URL (NEXT_PUBLIC_API_BASE_URL ou NEXT_PUBLIC_API_HOST), CORS no PHP, SSL/DNS e se o deploy da API esta ativo.`
+      );
+    }
+    throw e;
+  }
 }
 
 export async function readApiJson(res: Response): Promise<{

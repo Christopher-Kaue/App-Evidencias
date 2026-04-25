@@ -1,15 +1,10 @@
 <?php
 
+require_once __DIR__ . '/_lib/cors.php';
+apply_cors('GET,POST,OPTIONS', 'Content-Type, X-Role, X-User-Id');
+
 require_once __DIR__ . '/_lib/db.php';
 require_once __DIR__ . '/_lib/response.php';
-
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET,POST,OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Role, X-User-Id');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit;
-}
 
 try {
     $pdo = db();

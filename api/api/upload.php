@@ -1,15 +1,10 @@
 <?php
 
+require_once __DIR__ . '/_lib/cors.php';
+apply_cors('POST,OPTIONS', 'Content-Type, X-Role, X-User-Id');
+
 require_once __DIR__ . '/_lib/response.php';
 require_once __DIR__ . '/_lib/auth.php';
-
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST,OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Role, X-User-Id');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit;
-}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_response(['message' => 'Metodo nao permitido.'], 405);

@@ -1,16 +1,11 @@
 <?php
 
+require_once __DIR__ . '/_lib/cors.php';
+apply_cors('GET,PUT,DELETE,OPTIONS', 'Content-Type, X-Role, X-User-Id');
+
 require_once __DIR__ . '/_lib/db.php';
 require_once __DIR__ . '/_lib/response.php';
 require_once __DIR__ . '/_lib/auth.php';
-
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET,PUT,DELETE,OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Role, X-User-Id');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit;
-}
 
 if (!in_array($_SERVER['REQUEST_METHOD'], ['GET', 'PUT', 'DELETE'], true)) {
     json_response(['message' => 'Metodo nao permitido.'], 405);
