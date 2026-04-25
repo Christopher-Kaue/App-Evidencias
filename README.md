@@ -53,11 +53,13 @@ Use **dois projetos** (recomendado): um para o PHP e outro para o Next.js.
 
 **Web (Next.js)**
 
-1. Crie outro projeto no mesmo repositorio com Root Directory **`.`** (raiz do repo). O `vercel.json` na raiz define **framework: nextjs**; o `npm run build` compila `web/` e copia `web/.next` para `.next` na raiz para o deploy.
-2. No painel, em Build and Development: se **Output Directory** estiver como `public`, limpe ou use o padrao do Next (o preset nextjs nao deve usar `public` como saida).
-3. Em `.env.local` / envs de producao: `NEXT_PUBLIC_API_BASE_URL=https://<seu-projeto-api>.vercel.app` (sem barra no final).
+1. Crie outro projeto no mesmo repositorio.
+2. Em **Settings > General > Root Directory**, defina **`web`** (obrigatorio). Nao use a raiz do repositorio para o frontend: copiar `web/.next` para a raiz quebra os caminhos das Lambdas (erros como `_global-error` / segmentos `.rsc`).
+3. **Framework Preset**: Next.js (ou deixe autodetect; existe `web/vercel.json` com `"framework": "nextjs"`).
+4. **Build Command** padrao `next build` e **Output Directory** em branco (padrao do Next).
+5. Em `.env.local` / envs de producao: `NEXT_PUBLIC_API_BASE_URL=https://<seu-projeto-api>.vercel.app` (sem barra no final).
 
-Alternativa: Root Directory `web` (sem depender do `vercel.json` da raiz nem do script de copia).
+Para desenvolver a partir da raiz do repo, continue usando `npm run dev` / `npm run build` no `package.json` da raiz (delega para `web/`).
 
 O aviso sobre `builds` no painel some ao usar apenas `functions` no `api/vercel.json`, como neste repositorio.
 
