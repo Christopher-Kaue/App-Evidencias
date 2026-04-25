@@ -57,7 +57,17 @@ Use **dois projetos** (recomendado): um para o PHP e outro para o Next.js.
 2. Em **Settings > General > Root Directory**, defina **`web`** (obrigatorio). Nao use a raiz do repositorio para o frontend: copiar `web/.next` para a raiz quebra os caminhos das Lambdas (erros como `_global-error` / segmentos `.rsc`).
 3. **Framework Preset**: Next.js (ou deixe autodetect; existe `web/vercel.json` com `"framework": "nextjs"`).
 4. **Build Command** padrao `next build` (ja inclui copia `out` -> `public` na Vercel). Se o painel exigir **Output Directory** = `public`, deixe assim: na Vercel o app usa `output: "export"` e o script preenche `public/` automaticamente.
-5. Em `.env.local` / envs de producao: `NEXT_PUBLIC_API_BASE_URL=https://<seu-projeto-api>.vercel.app` (sem barra no final).
+5. Em **Environment Variables** do projeto **frontend**: `NEXT_PUBLIC_API_BASE_URL=https://<seu-projeto-api>.vercel.app` (sem barra no final, sempre **https**). Sem isso o login chama `/api/login.php` no proprio site Next e **falha**.
+
+### Login de teste (apos rodar `database/schema.sql` ou `database/migrate_senhas_teste_Senha123.sql`)
+
+| Email | Senha | Observacao |
+| --- | --- | --- |
+| `professor.teste@fadergs.com.br` | `Senha123` | Acesso ao sistema |
+| `coordenador.teste@fadergs.com.br` | `Senha123` | Acesso ao sistema |
+| `admin@fadergs.com.br` | `Senha123` | Perfil administrador **nao** entra neste app (use professor ou coordenador) |
+
+Se a API retornar erro de banco na nuvem, na Vercel do **PHP** defina `DB_SSL=1` (e opcionalmente `DB_SSL_CA`) conforme `api/.env.example`.
 
 Para desenvolver a partir da raiz do repo, continue usando `npm run dev` / `npm run build` no `package.json` da raiz (delega para `web/`).
 

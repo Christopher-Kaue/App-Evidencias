@@ -82,8 +82,9 @@ CREATE TABLE IF NOT EXISTS eventoevidencia (
   CONSTRAINT fk_ee_tipo FOREIGN KEY (idtipoevidencia) REFERENCES tipoevidencia(id)
 );
 
+-- Senhas de teste abaixo: texto plano "Senha123" (bcrypt). O login web aceita apenas perfis professor/coordenador.
 INSERT INTO usuario (id, nome, email, celular, senha, status, idusuario)
-VALUES (1, 'Administrador Inicial', 'admin@fadergs.com.br', '51999999999', '$2y$10$5N5C8TgIWr8M7P2rGx4Wl.D5F2Qk7x9GWrmx1NaQoHq2P2GqZsKzu', 'A', NULL)
+VALUES (1, 'Administrador Inicial', 'admin@fadergs.com.br', '51999999999', '$2b$10$hzkw5Zdd17BBPwOHfRNLO.QrhS4dCbqyOty3weo6HtqCtIb0Xguh6', 'A', NULL)
 ON DUPLICATE KEY UPDATE nome = VALUES(nome);
 
 INSERT INTO perfil (nome, status, idusuario)
@@ -91,7 +92,7 @@ SELECT 'administrador', 'A', 1
 WHERE NOT EXISTS (SELECT 1 FROM perfil WHERE nome = 'administrador' AND idusuario = 1);
 
 INSERT INTO usuario (nome, email, celular, senha, status, idusuario)
-SELECT 'Professor Teste', 'professor.teste@fadergs.com.br', '51990000001', '$2y$10$NjzdrGgwu/HdhgsdVJ4AyuJo1xsQwz9GgfXkbL4FjmEA3wxfJfS2C', 'A', 1
+SELECT 'Professor Teste', 'professor.teste@fadergs.com.br', '51990000001', '$2b$10$hzkw5Zdd17BBPwOHfRNLO.QrhS4dCbqyOty3weo6HtqCtIb0Xguh6', 'A', 1
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE email = 'professor.teste@fadergs.com.br');
 
 INSERT INTO perfil (nome, status, idusuario)
@@ -101,7 +102,7 @@ WHERE u.email = 'professor.teste@fadergs.com.br'
   AND NOT EXISTS (SELECT 1 FROM perfil p WHERE p.idusuario = u.id);
 
 INSERT INTO usuario (nome, email, celular, senha, status, idusuario)
-SELECT 'Coordenador Teste', 'coordenador.teste@fadergs.com.br', '51990000002', '$2y$10$vCgtf5WJ7tNFPzxZ4tgGROEB8aLzvRXJLltOD12mDxfLApx2g/jw6', 'A', 1
+SELECT 'Coordenador Teste', 'coordenador.teste@fadergs.com.br', '51990000002', '$2b$10$hzkw5Zdd17BBPwOHfRNLO.QrhS4dCbqyOty3weo6HtqCtIb0Xguh6', 'A', 1
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE email = 'coordenador.teste@fadergs.com.br');
 
 INSERT INTO perfil (nome, status, idusuario)

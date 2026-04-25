@@ -2,8 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiUrl } from "../lib/api";
-import { setSessionUser } from "../lib/session";
+import { apiUrl, isApiBaseConfigured } from "../lib/api";
+import { setSessionUser, type SessionUser } from "../lib/session";
 
 export default function LoginPage() {
   const [erro, setErro] = useState("");
@@ -22,21 +22,47 @@ export default function LoginPage() {
     const fd = new FormData(e.currentTarget);
     const payload = Object.fromEntries(fd.entries());
     try {
+      if (!isApiBaseConfigured()) {
+        setErro(
+          "URL da API nao configurada. No projeto do frontend na Vercel, defina NEXT_PUBLIC_API_BASE_URL com a URL do backend PHP (ex.: https://seu-projeto-api.vercel.app), sem barra no final, e faca um novo deploy."
+        );
+        return;
+      }
+
       const res = await fetch(apiUrl("/api/login.php"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const json = await res.json();
-      if (!res.ok) {
-        setErro(json.message || "Falha no login.");
+
+      const text = await res.text();
+      let json: { message?: string; detail?: string; data?: unknown } = {};
+      try {
+        json = text ? (JSON.parse(text) as typeof json) : {};
+      } catch {
+        setErro(
+          `Resposta invalida do servidor (${res.status}). Confirme NEXT_PUBLIC_API_BASE_URL e se a API PHP esta no ar.`
+        );
         return;
       }
 
-      setSessionUser(json.data);
+      if (!res.ok) {
+        const extra = json.detail ? ` (${json.detail})` : "";
+        setErro((json.message || "Falha no login.") + extra);
+        return;
+      }
+
+      if (!json.data || typeof json.data !== "object") {
+        setErro("Resposta da API sem dados de sessao.");
+        return;
+      }
+
+      setSessionUser(json.data as SessionUser);
       router.replace("/dashboard");
     } catch {
-      setErro("Nao foi possivel conectar com o servidor.");
+      setErro(
+        "Nao foi possivel conectar com a API (rede, CORS ou URL incorreta). Verifique NEXT_PUBLIC_API_BASE_URL e se o backend aceita origem do seu site."
+      );
     } finally {
       setLoading(false);
     }
@@ -47,6 +73,11 @@ export default function LoginPage() {
       <div className="login-card">
         <h1>Acesso ao sistema</h1>
         <p>Entre como professor ou coordenador para gerenciar eventos academicos.</p>
+        {!isApiBaseConfigured() && (
+          <p className="error-text" role="alert">
+            Ambiente sem API: configure <code>NEXT_PUBLIC_API_BASE_URL</code> na Vercel (URL do projeto PHP) e redeploy.
+          </p>
+        )}
         <form onSubmit={onSubmit} className="grid">
           <label>
             Email

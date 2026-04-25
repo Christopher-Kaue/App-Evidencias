@@ -61,9 +61,21 @@ function db(): PDO
     $pass = getenv('DB_PASS') ?: '';
 
     $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
-    $pdo = new PDO($dsn, $user, $pass, [
+
+    $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    ]);
+    ];
+
+    $ssl = getenv('DB_SSL');
+    if ($ssl === '1' || strcasecmp((string) $ssl, 'true') === 0) {
+        $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+    }
+    $sslCa = getenv('DB_SSL_CA');
+    if ($sslCa !== false && $sslCa !== '') {
+        $options[PDO::MYSQL_ATTR_SSL_CA] = $sslCa;
+    }
+
+    $pdo = new PDO($dsn, $user, $pass, $options);
     return $pdo;
 }
