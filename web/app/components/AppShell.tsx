@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
-import { isApiBaseConfigured } from "../../lib/api";
+import { getApiBaseUrl } from "../../lib/api";
 import { clearSessionUser, getSessionUser, SessionUser } from "../../lib/session";
 
 const navItems = [
@@ -17,6 +17,11 @@ export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [semApiUrl, setSemApiUrl] = useState(false);
+
+  useEffect(() => {
+    setSemApiUrl(!getApiBaseUrl());
+  }, []);
 
   useEffect(() => {
     const session = getSessionUser();
@@ -33,9 +38,10 @@ export function AppShell({ children }: PropsWithChildren) {
 
   return (
     <div className="app-shell-layout">
-      {!isApiBaseConfigured() && (
+      {semApiUrl && (
         <div className="api-config-banner" role="alert">
-          <strong>API nao configurada.</strong> Defina <code>NEXT_PUBLIC_API_BASE_URL</code> na Vercel e redeploy do frontend.
+          <strong>URL da API nao detectada.</strong> Preview: defina <code>NEXT_PUBLIC_API_BASE_URL</code>. Producao: front em{" "}
+          <code>meuapp.vercel.app</code> e PHP em <code>meuapp-api.vercel.app</code>, ou defina a variavel.
         </div>
       )}
       <div className="app-shell">

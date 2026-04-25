@@ -1,10 +1,11 @@
-import { apiUrl, isApiBaseConfigured } from "./api";
+import { apiUrl, getApiBaseUrl } from "./api";
 
 export const getApiConfigErrorMessage = (): string =>
-  "Configure NEXT_PUBLIC_API_BASE_URL no projeto da Vercel (URL https do backend PHP) e faca redeploy.";
+  "Nao foi possivel determinar a URL da API. Em deploy preview, defina NEXT_PUBLIC_API_BASE_URL. Em producao, use projeto PHP <nome>-api.vercel.app com front <nome>.vercel.app ou defina a variavel.";
 
 export async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
-  if (!isApiBaseConfigured()) {
+  const base = getApiBaseUrl();
+  if (!base) {
     throw new Error(getApiConfigErrorMessage());
   }
   return fetch(apiUrl(path), init);
@@ -37,7 +38,6 @@ export async function readApiJson(res: Response): Promise<{
   };
 }
 
-/** Fetch + parse JSON (corpo sempre consumido). */
 export async function apiRequest(
   path: string,
   init?: RequestInit

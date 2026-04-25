@@ -2,19 +2,24 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isApiBaseConfigured } from "../lib/api";
-import { apiFetch, readApiJson } from "../lib/api-fetch";
+import { getApiBaseUrl } from "../lib/api";
+import { apiFetch, getApiConfigErrorMessage, readApiJson } from "../lib/api-fetch";
 import { setSessionUser, type SessionUser } from "../lib/session";
 
 export default function LoginPage() {
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
+  const [semApiUrl, setSemApiUrl] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const session = window.localStorage.getItem("app-evidencias-user");
     if (session) router.replace("/dashboard");
   }, [router]);
+
+  useEffect(() => {
+    setSemApiUrl(!getApiBaseUrl());
+  }, []);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,13 +28,6 @@ export default function LoginPage() {
     const fd = new FormData(e.currentTarget);
     const payload = Object.fromEntries(fd.entries());
     try {
-      if (!isApiBaseConfigured()) {
-        setErro(
-          "URL da API nao configurada. No projeto do frontend na Vercel, defina NEXT_PUBLIC_API_BASE_URL com a URL do backend PHP (ex.: https://seu-projeto-api.vercel.app), sem barra no final, e faca um novo deploy."
-        );
-        return;
-      }
-
       const res = await apiFetch("/api/login.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,10 +49,8 @@ export default function LoginPage() {
 
       setSessionUser(json.data as SessionUser);
       router.replace("/dashboard");
-    } catch {
-      setErro(
-        "Nao foi possivel conectar com a API (rede, CORS ou URL incorreta). Verifique NEXT_PUBLIC_API_BASE_URL e se o backend aceita origem do seu site."
-      );
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : getApiConfigErrorMessage());
     } finally {
       setLoading(false);
     }
@@ -65,9 +61,9 @@ export default function LoginPage() {
       <div className="login-card">
         <h1>Acesso ao sistema</h1>
         <p>Entre como professor ou coordenador para gerenciar eventos academicos.</p>
-        {!isApiBaseConfigured() && (
+        {semApiUrl && (
           <p className="error-text" role="alert">
-            Ambiente sem API: configure <code>NEXT_PUBLIC_API_BASE_URL</code> na Vercel (URL do projeto PHP) e redeploy.
+            URL da API nao detectada (ex.: deploy preview). Defina <code>NEXT_PUBLIC_API_BASE_URL</code> na Vercel e redeploy.
           </p>
         )}
         <form onSubmit={onSubmit} className="grid">
