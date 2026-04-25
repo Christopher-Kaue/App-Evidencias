@@ -59,7 +59,8 @@ Use **dois projetos** (recomendado): um para o PHP e outro para o Next.js.
 4. **Build Command** padrao `next build` (ja inclui copia `out` -> `public` na Vercel). Se o painel exigir **Output Directory** = `public`, deixe assim: na Vercel o app usa `output: "export"` e o script preenche `public/` automaticamente.
 5. **URL da API no frontend** (opcional na maioria dos casos):
    - **Producao Vercel**: se o projeto Next estiver em `https://MEUAPP.vercel.app`, o codigo assume a API em `https://MEUAPP-api.vercel.app` (PHP com o mesmo prefixo + sufixo `-api`). Renomeie o projeto PHP na Vercel para seguir esse padrao ou defina a variavel abaixo.
-   - **Deploy preview** (URL com `-git-`): defina `NEXT_PUBLIC_API_BASE_URL=https://<seu-php>.vercel.app` (sem barra no final).
+   - **Preview ou URL de deploy unica** (ex.: `algo-abc123xyz-seu-time.vercel.app`, varios segmentos): **sempre** defina `NEXT_PUBLIC_API_BASE_URL=https://<seu-php>.vercel.app` (ou `NEXT_PUBLIC_API_HOST`) no projeto Next — o app nao adivinha a API nesses hosts.
+   - **Deploy preview** (URL com `-git-`): mesma variavel acima.
    - **Local**: usa `http://localhost/app-evidencias` automaticamente; pode sobrescrever com `NEXT_PUBLIC_API_BASE_URL` em `web/.env.local`.
 
 ### Login de teste (apos rodar `database/schema.sql` ou `database/migrate_senhas_teste_Senha123.sql`)

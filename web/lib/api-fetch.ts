@@ -1,7 +1,7 @@
 import { apiUrl, getApiBaseUrl } from "./api";
 
 export const getApiConfigErrorMessage = (): string =>
-  "Nao foi possivel determinar a URL da API. Em deploy preview, defina NEXT_PUBLIC_API_BASE_URL. Em producao, use projeto PHP <nome>-api.vercel.app com front <nome>.vercel.app ou defina a variavel.";
+  "Nao foi possivel determinar a URL da API. Em preview ou em URLs `*.vercel.app` longas (deploy unico), defina NEXT_PUBLIC_API_BASE_URL (ou NEXT_PUBLIC_API_HOST) no projeto Next — aponte para o host do projeto PHP (ex.: https://seu-projeto-api.vercel.app). Em producao estavel, pode omitir se o PHP for `<mesmo-slug>-api.vercel.app`.";
 
 export async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   const base = getApiBaseUrl();
@@ -18,7 +18,7 @@ export async function apiFetch(path: string, init?: RequestInit): Promise<Respon
   } catch (e) {
     if (e instanceof TypeError) {
       throw new Error(
-        `Nao foi possivel conectar a API (${base}). Verifique a URL (NEXT_PUBLIC_API_BASE_URL ou NEXT_PUBLIC_API_HOST), CORS no PHP, SSL/DNS e se o deploy da API esta ativo.`
+        `Nao foi possivel conectar a API (${base}). Em URLs de preview/deploy da Vercel (varios hifens no host), defina NEXT_PUBLIC_API_BASE_URL ou NEXT_PUBLIC_API_HOST com a URL real do projeto PHP. Verifique tambem CORS, SSL/DNS e se o deploy da API esta ativo.`
       );
     }
     throw e;
