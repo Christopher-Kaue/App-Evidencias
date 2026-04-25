@@ -4,7 +4,7 @@ Sistema profissional de gestao de eventos academicos com backend em PHP + MySQL 
 
 ## Arquitetura
 
-- `api/`: endpoints PHP serverless (`@vercel/php`)
+- `api/`: projeto PHP na Vercel (Root Directory `api`). Os handlers ficam em `api/api/*.php` para obedecer a convencao de rotas `/api/*.php` da plataforma; no XAMPP, `api/.htaccess` encaminha `api/login.php` para esses arquivos.
 - `web/`: aplicacao Next.js (interface profissional)
 - `database/schema.sql`: modelagem do banco de dados conforme briefing
 
@@ -20,7 +20,7 @@ Sistema profissional de gestao de eventos academicos com backend em PHP + MySQL 
 ## Como rodar local (XAMPP)
 
 1. Copie o projeto para a pasta `htdocs` do XAMPP com o nome `app-evidencias`.
-2. Inicie `Apache` e `MySQL` no painel do XAMPP.
+2. Inicie `Apache` e `MySQL` no painel do XAMPP. Confirme que `mod_rewrite` esta habilitado e que o virtual host permite `.htaccess` (`AllowOverride All`).
 3. Crie um banco MySQL e execute:
    - `database/schema.sql`
 4. Na pasta `api`, copie `api/.env.example` para `api/.env` e ajuste:
@@ -41,13 +41,22 @@ Sistema profissional de gestao de eventos academicos com backend em PHP + MySQL 
 
 ## Deploy na Vercel
 
-1. Suba o projeto no GitHub.
-2. Importe o repositorio na Vercel.
-3. Configure variaveis de ambiente do banco MySQL.
-4. Build Command (automatico): `npm run build` em `web`.
-5. A Vercel publicara:
-   - Frontend Next.js em `/`
-   - API PHP em `/api/*.php`
+Use **dois projetos** (recomendado): um para o PHP e outro para o Next.js.
+
+**API (PHP)**
+
+1. Crie um projeto importando o mesmo repositorio.
+2. Em **Settings > General > Root Directory**, defina `api`.
+3. **Framework Preset**: Other (sem build command; o `vercel.json` define o runtime `vercel-php`).
+4. Em **Environment Variables**, cadastre `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` (o MySQL precisa aceitar conexoes da internet, por exemplo Aiven, PlanetScale ou VPS com firewall liberado para a Vercel).
+5. As URLs ficam em `https://<seu-projeto-api>.vercel.app/api/*.php`.
+
+**Web (Next.js)**
+
+1. Outro projeto no mesmo repositorio com Root Directory `web`.
+2. Em `.env.local` / envs de producao, use `NEXT_PUBLIC_API_BASE_URL=https://<seu-projeto-api>.vercel.app` (sem barra no final).
+
+O aviso sobre `builds` no painel some ao usar apenas `functions` no `api/vercel.json`, como neste repositorio.
 
 ## Endpoints principais
 

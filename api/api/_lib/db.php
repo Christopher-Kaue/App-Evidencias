@@ -52,7 +52,7 @@ function db(): PDO
         return $pdo;
     }
 
-    load_env_file(__DIR__ . '/../.env');
+    load_env_file(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env');
 
     $host = getenv('DB_HOST') ?: '127.0.0.1';
     $port = getenv('DB_PORT') ?: '3306';

@@ -1,0 +1,5 @@
+# XAMPP: mantem URLs /app-evidencias/api/*.php apontando para api/api/*.php (requisito Vercel)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^([^/]+\.php)$ api/$1 [L]
+</IfModule>
