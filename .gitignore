@@ -8,3 +8,5 @@ vendor
 storage/uploads
 uploads
 .vercel
+# Gerado no build na Vercel (export estatico -> public na raiz)
+/public

@@ -1,1 +1,4 @@
 .vercel
+# Export estatico (Vercel) e copia para public/
+out/
+public/

@@ -56,7 +56,7 @@ Use **dois projetos** (recomendado): um para o PHP e outro para o Next.js.
 1. Crie outro projeto no mesmo repositorio.
 2. Em **Settings > General > Root Directory**, defina **`web`** (obrigatorio). Nao use a raiz do repositorio para o frontend: copiar `web/.next` para a raiz quebra os caminhos das Lambdas (erros como `_global-error` / segmentos `.rsc`).
 3. **Framework Preset**: Next.js (ou deixe autodetect; existe `web/vercel.json` com `"framework": "nextjs"`).
-4. **Build Command** padrao `next build` e **Output Directory** em branco (padrao do Next).
+4. **Build Command** padrao `next build` (ja inclui copia `out` -> `public` na Vercel). Se o painel exigir **Output Directory** = `public`, deixe assim: na Vercel o app usa `output: "export"` e o script preenche `public/` automaticamente.
 5. Em `.env.local` / envs de producao: `NEXT_PUBLIC_API_BASE_URL=https://<seu-projeto-api>.vercel.app` (sem barra no final).
 
 Para desenvolver a partir da raiz do repo, continue usando `npm run dev` / `npm run build` no `package.json` da raiz (delega para `web/`).

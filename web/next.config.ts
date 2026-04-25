@@ -3,11 +3,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const monorepoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+const onVercel = Boolean(process.env.VERCEL);
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Inclui arquivos da raiz do repo no trace (monorepo); evita Lambdas incompletas na Vercel
-  outputFileTracingRoot: monorepoRoot
+  outputFileTracingRoot: monorepoRoot,
+  // Na Vercel: export estatico + script pos-build copia out/ -> public/ quando o painel exige Output Directory "public"
+  ...(onVercel ? { output: "export" as const } : {})
 };
 
 export default nextConfig;
