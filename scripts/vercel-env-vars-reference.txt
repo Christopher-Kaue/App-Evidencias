@@ -1,0 +1,19 @@
+Copiar/colagem rapida nos projetos Vercel (substituir valores).
+
+=== Projeto PHP (Root Directory = api) ===
+DB_HOST=<host do MySQL na nuvem>
+DB_PORT=3306
+DB_NAME=<nome do banco>
+DB_USER=<usuario>
+DB_PASS=<senha>
+DB_SSL=1
+PUBLIC_APP_URL=https://<teu-projeto-php>.vercel.app
+
+(Nao commite senhas no Git.)
+
+=== Projeto Web (Root Directory = web) ===
+NEXT_PUBLIC_API_BASE_URL=https://<teu-projeto-php>.vercel.app
+
+Sem barra final. Sem sufixo /api.
+
+Depois: redeploy Web. PHP: Settings > Deployment Protection off se aparecer 403.

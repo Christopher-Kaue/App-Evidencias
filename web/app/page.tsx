@@ -26,7 +26,13 @@ export default function LoginPage() {
     setLoading(true);
     setErro("");
     const fd = new FormData(e.currentTarget);
-    const payload = Object.fromEntries(fd.entries());
+    const raw = Object.fromEntries(fd.entries());
+    const payload = {
+      email: String(raw.email ?? "")
+        .trim()
+        .toLowerCase(),
+      senha: String(raw.senha ?? "")
+    };
     try {
       const res = await apiFetch("/api/login.php", {
         method: "POST",
@@ -38,7 +44,16 @@ export default function LoginPage() {
 
       if (!json.ok) {
         const extra = json.detail ? ` (${json.detail})` : "";
-        setErro((json.message || "Falha no login.") + extra);
+        const baseMsg = json.message || "Falha no login.";
+        const hint401 =
+          json.status === 401
+            ? " Contas de teste apos schema.sql: professor.teste@fadergs.com.br ou coordenador.teste@fadergs.com.br, senha Senha123."
+            : "";
+        const hint403 =
+          json.status === 403
+            ? " O perfil administrador nao acessa esta interface — use professor ou coordenador."
+            : "";
+        setErro(baseMsg + extra + hint401 + hint403);
         return;
       }
 
@@ -63,8 +78,8 @@ export default function LoginPage() {
         <p>Entre como professor ou coordenador para gerenciar eventos academicos.</p>
         {semApiUrl && (
           <p className="error-text" role="alert">
-            URL da API nao detectada (ex.: deploy preview). Defina <code>NEXT_PUBLIC_API_BASE_URL</code> ou{" "}
-            <code>NEXT_PUBLIC_API_HOST</code> na Vercel e redeploy.
+            URL da API nao detectada (preview/deploy). Defina <code>NEXT_PUBLIC_API_BASE_URL</code> na Vercel ou em{" "}
+            <code>web/.env.local</code>. Local: use <code>npm run dev:local</code> (PHP na porta 9999).
           </p>
         )}
         <form onSubmit={onSubmit} className="grid">

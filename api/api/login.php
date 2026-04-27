@@ -12,35 +12,49 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $body = read_json_body();
-    if (empty($body['email']) || empty($body['senha'])) {
+    $emailRaw = isset($body['email']) ? trim((string)$body['email']) : '';
+    $senha = isset($body['senha']) ? (string)$body['senha'] : '';
+    if ($emailRaw === '' || $senha === '') {
         json_response(['message' => 'Informe email e senha.'], 422);
     }
 
+    // Normaliza email (mesmo utilizador com maiusculas/minusculas no browser)
+    $email = strtolower($emailRaw);
+
     $stmt = db()->prepare('
-        SELECT u.id, u.nome, u.email, u.senha, p.nome as perfil
-        FROM usuario u
-        LEFT JOIN perfil p ON p.idusuario = u.id AND p.status = "A" AND p.nome IN ("professor", "coordenador")
-        WHERE u.email = :email AND u.status = "A"
+        SELECT id, nome, email, senha
+        FROM usuario
+        WHERE email = :email AND status = "A"
         LIMIT 1
     ');
-    $stmt->execute([':email' => $body['email']]);
-    $user = $stmt->fetch();
+    $stmt->execute([':email' => $email]);
+    $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-    if (!$user || !password_verify((string)$body['senha'], (string)$user['senha'])) {
+    if (!$user || !password_verify($senha, (string)$user['senha'])) {
         json_response(['message' => 'Credenciais invalidas.'], 401);
     }
 
-    $perfil = strtolower((string)($user['perfil'] ?? ''));
-    if (!in_array($perfil, ['professor', 'coordenador'], true)) {
+    // Perfis permitidos num segundo passo (LEFT JOIN + LIMIT podia falhar em dados incompletos ou ordem ambigua)
+    $stmtPerfil = db()->prepare('
+        SELECT nome FROM perfil
+        WHERE idusuario = :uid AND status = "A" AND nome IN ("professor", "coordenador")
+        ORDER BY FIELD(nome, "coordenador", "professor")
+        LIMIT 1
+    ');
+    $stmtPerfil->execute([':uid' => $user['id']]);
+    $rowPerfil = $stmtPerfil->fetch(\PDO::FETCH_ASSOC);
+    $perfilNome = isset($rowPerfil['nome']) ? strtolower((string)$rowPerfil['nome']) : '';
+
+    if (!in_array($perfilNome, ['professor', 'coordenador'], true)) {
         json_response(['message' => 'Perfil sem acesso ao sistema. Use professor ou coordenador.'], 403);
     }
 
     json_response([
         'data' => [
-            'id' => $user['id'],
+            'id' => (int)$user['id'],
             'nome' => $user['nome'],
             'email' => $user['email'],
-            'perfil' => $perfil,
+            'perfil' => $perfilNome,
         ]
     ]);
 } catch (Throwable $e) {

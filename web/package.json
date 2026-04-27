@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/clean-export-artifacts.mjs && next build && node scripts/export-to-public.mjs",
+    "build": "node scripts/sync-vercel-rewrite.mjs && node scripts/clean-export-artifacts.mjs && next build && node scripts/export-to-public.mjs",
     "start": "next start",
     "lint": "next lint"
   },

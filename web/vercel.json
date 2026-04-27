@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/api-proxy/:path*",
-      "destination": "https://api-christopher-kaues-projects.vercel.app/api/:path*"
+      "destination": "https://substituir-no-deploy.vercel.app/api/:path*"
     }
   ]
 }

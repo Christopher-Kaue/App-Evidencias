@@ -1,5 +1,8 @@
 const trimSlash = (s: string): string => s.trim().replace(/\/+$/, "");
 
+/** Base padrao local sem .env: servidor PHP embutido em api/ (npm run dev:api). XAMPP: use NEXT_PUBLIC_API_BASE_URL em .env.local */
+const LOCAL_DEFAULT_API = "http://127.0.0.1:9999";
+
 const useEdgeProxy = process.env.NEXT_PUBLIC_API_VIA_PROXY === "1";
 
 /**
@@ -17,7 +20,7 @@ function isLikelyVercelDeploymentHostname(slug: string): boolean {
  * Base absoluta do backend PHP (sem barra final).
  * 1) NEXT_PUBLIC_API_BASE_URL — prioridade (Vercel / .env.local)
  * 2) NEXT_PUBLIC_API_HOST — apenas hostname (ex.: meu-projeto-api.vercel.app) ou URL completa
- * 3) localhost → XAMPP (README)
+ * 3) localhost → PHP embutido http://127.0.0.1:9999 (npm run dev:api) ou XAMPP via .env.local
  * 4) Producao Vercel: alias estavel `https://<slug>.vercel.app` → `https://<slug>-api.vercel.app`
  * 5) Preview (VERCEL_ENV), `-git-` no slug, ou hostname de deploy longo: "" — defina NEXT_PUBLIC_API_BASE_URL
  *
@@ -42,7 +45,7 @@ export function getApiBaseUrl(): string {
   if (typeof window !== "undefined") {
     const { hostname, protocol } = window.location;
     if (hostname === "localhost" || hostname === "127.0.0.1") {
-      return trimSlash("http://localhost/app-evidencias");
+      return trimSlash(LOCAL_DEFAULT_API);
     }
 
     const m = hostname.match(/^([a-z0-9-]+)\.vercel\.app$/i);
@@ -63,7 +66,7 @@ export function getApiBaseUrl(): string {
   }
 
   if (process.env.NODE_ENV === "development") {
-    return trimSlash("http://localhost/app-evidencias");
+    return trimSlash(LOCAL_DEFAULT_API);
   }
 
   return "";

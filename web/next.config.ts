@@ -5,8 +5,11 @@ import { fileURLToPath } from "node:url";
 const monorepoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const onVercel = Boolean(process.env.VERCEL);
 
-/** Projeto PHP na Vercel (mesmo host em web/vercel.json rewrites). */
-const DEFAULT_VERCEL_PHP_API = "https://api-christopher-kaues-projects.vercel.app";
+/** Origem publica do projeto PHP na Vercel (mesmo valor que NEXT_PUBLIC_API_BASE_URL no painel). */
+const VERCEL_PHP_ORIGIN =
+  process.env.NEXT_PUBLIC_VERCEL_PHP_ORIGIN?.trim() ||
+  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ||
+  "";
 
 /** No deploy Vercel, o front usa /api-proxy/* (rewrite) para evitar CORS e bloqueios cross-origin. Defina NEXT_PUBLIC_API_VIA_PROXY=0 no painel para voltar ao modo direto + NEXT_PUBLIC_API_BASE_URL. */
 const dashboardBypassProxy = process.env.NEXT_PUBLIC_API_VIA_PROXY === "0";
@@ -14,7 +17,7 @@ const useVercelEdgeProxy = onVercel && !dashboardBypassProxy;
 
 const nextPublicApiBaseUrl =
   (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").trim() ||
-  (onVercel && !useVercelEdgeProxy ? DEFAULT_VERCEL_PHP_API : "");
+  (onVercel && !useVercelEdgeProxy ? VERCEL_PHP_ORIGIN : "");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

@@ -17,8 +17,12 @@ export async function apiFetch(path: string, init?: RequestInit): Promise<Respon
     });
   } catch (e) {
     if (e instanceof TypeError) {
+      const localHint =
+        base.includes("127.0.0.1:9999") || base.includes("localhost:9999")
+          ? " Inicie a API com `npm run dev:api` (ou `npm run dev:local` para Next + PHP juntos)."
+          : "";
       throw new Error(
-        `Nao foi possivel conectar a API (${base}). Na Vercel o app usa rewrite same-origin (/api-proxy). Verifique deploy do front e do PHP, SSL/DNS e se o painel da API nao bloqueia o trafego. Para chamar o PHP direto do navegador, defina NEXT_PUBLIC_API_VIA_PROXY=0 e NEXT_PUBLIC_API_BASE_URL.`
+        `Nao foi possivel conectar a API (${base}).${localHint} Na Vercel: rewrite /api-proxy. Local: confira MySQL, api/.env e NEXT_PUBLIC_API_BASE_URL.`
       );
     }
     throw e;
@@ -37,10 +41,14 @@ export async function readApiJson(res: Response): Promise<{
   try {
     parsed = text ? (JSON.parse(text) as Record<string, unknown>) : {};
   } catch {
+    const looksHtml = /^\s*</.test(text) || /<html[\s>]/i.test(text);
+    const hint = looksHtml
+      ? " A API devolveu HTML (rewrite errado ou projeto PHP inexistente). Vercel Web: confira NEXT_PUBLIC_API_BASE_URL no build e GET https://<php>/api/health.php. Local: npm run dev:api + URL http://127.0.0.1:9999."
+      : "";
     return {
       ok: false,
       status: res.status,
-      message: `Resposta invalida (${res.status}). Verifique a URL da API.`
+      message: `Resposta invalida (${res.status}). Verifique a URL da API.${hint}`
     };
   }
   return {

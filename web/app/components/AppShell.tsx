@@ -40,8 +40,8 @@ export function AppShell({ children }: PropsWithChildren) {
     <div className="app-shell-layout">
       {semApiUrl && (
         <div className="api-config-banner" role="alert">
-          <strong>URL da API nao detectada.</strong> Preview: defina <code>NEXT_PUBLIC_API_BASE_URL</code>. Producao: front em{" "}
-          <code>meuapp.vercel.app</code> e PHP em <code>meuapp-api.vercel.app</code>, ou defina a variavel.
+          <strong>URL da API nao detectada.</strong> Defina <code>NEXT_PUBLIC_API_BASE_URL</code> (Vercel ou <code>web/.env.local</code>).
+          Local: <code>npm run dev:local</code> ou <code>npm run dev:api</code> com <code>web/.env.development</code>.
         </div>
       )}
       <div className="app-shell">
