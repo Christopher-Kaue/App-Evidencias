@@ -1,0 +1,96 @@
+================================================================================
+  APP EVIDENCIAS — SUBIR NA VERCEL (NEXT + PHP + MYSQL NA INTERNET)
+================================================================================
+  O Next.js NAO liga ao MySQL direto. Fluxo:
+    navegador → site Next (projeto Web) → API PHP (projeto api) → MySQL na nuvem
+
+  Eu (agente no Cursor) NAO consigo abrir o painel da Vercel nem o Railway por ti —
+  tens de usar o teu login no browser e seguir os passos abaixo.
+
+--------------------------------------------------------------------------------
+PASSO A — MYSQL (Railway, Aiven, PlanetScale-compativel, RDS, etc.)
+--------------------------------------------------------------------------------
+  1. Cria uma instancia MySQL e um utilizador que possa ligar pela internet.
+
+  2. No SQL editor do provedor, selecciona o BANCO correcto e executa todo o conteudo
+     do ficheiro do repo:
+       database/schema_cloud.sql
+
+  3. Guarda na mao:
+       DB_HOST   DB_PORT (normalmente 3306)
+       DB_NAME   DB_USER   DB_PASS
+       Se o painel diz “SSL obrigatorio”: precisaras de DB_SSL=1 na API PHP.
+
+--------------------------------------------------------------------------------
+PASSO B — PROJECTO VERCEL DA API (PHP)
+--------------------------------------------------------------------------------
+  1. Vercel → Add New → Project → Import o teu repo GitHub.
+
+  2. SETTINGS IMPORTANTES ANTES DE DEPLOY:
+       Root Directory  =   api       (tem de ser esta pasta exactamente)
+
+  3. Framework Preset: Other (sem npm build obrigatorio para o PHP).
+
+  4. Environment Variables (Settings → Environment Variables → adicionar tudo):
+       DB_HOST          = (host do passo A)
+       DB_PORT          = 3306  (ou o que o provedor der)
+       DB_NAME
+       DB_USER
+       DB_PASS
+       DB_SSL           = 1      (se o MySQL exigir TLS; muitos sim)
+       (opcional) PUBLIC_APP_URL = https:// (a URL que a Vercel der a ESTE projecto PHP,
+         ex. https://app-evidencias-api.vercel.app — depois do 1. deploy podes copiar)
+
+  5. Deploy. No fim, anota a URL publica do projecto PHP, por ex.:
+       https://teu-projeto-api.vercel.app
+
+  6. No BROWSER abre (substitui pela tua URL):
+       https://teu-projeto-api.vercel.app/api/health.php
+
+     Tens de ver JSON com   "ok": true   e   "db": true
+     Se "db": false → as variaveis DB_* ou DB_SSL estao erradas OU o firewall do
+     MySQL bloqueia a Vercel. Corrige ate health dar db true.
+
+  7. Se o login no site der 403 na borda (HTML, nao JSON):
+       Projecto PHP → Settings → Deployment Protection → desliga para trafego publico.
+
+--------------------------------------------------------------------------------
+PASSO C — PROJECTO VERCEL DO SITE (NEXT.JS)
+--------------------------------------------------------------------------------
+  1. Vercel → Add New → Project → MESMO repositório.
+
+  2. Root Directory =  web   (exactamente esta pasta)
+
+  3. Build: deixa o default (npm run build a partir da pasta web) OU
+     Build Command:  cd web && npm run build
+     conforme o que o painel sugerir (o projecto root tem de ser web).
+
+  4. Environment Variable OBRIGATORIA (obrigatoria — sem isto o build falha na Vercel):
+       NEXT_PUBLIC_API_BASE_URL = https://teu-projeto-api.vercel.app
+       (o MESMO host do passo B.5, SEM /api no fim, SEM barra final /)
+
+     Podes usar o mesmo valor em NEXT_PUBLIC_VERCEL_PHP_ORIGIN se quiseres; o build
+     so precisa de um deles para o script sync-vercel-rewrite.
+
+  5. Se o painel da Vercel pedir “Output Directory” para o static export:
+       public
+     O nosso script de build copia `out` → `public` no fim.
+
+  6. Salvar variaveis e fazer DEPLOY / Redeploy do projecto Web.
+
+--------------------------------------------------------------------------------
+PASSO D — LOGIN NO SITE
+--------------------------------------------------------------------------------
+  Usa conta de PROFESSOR ou COORDENADOR (o admin NAO entra nesta interface):
+    Email:  professor.teste@fadergs.com.br
+    Senha:  Senha123
+  (Isto vem do schema_cloud.sql — se importaste mal o SQL, o utilizador nao existe.)
+
+--------------------------------------------------------------------------------
+AJUDA NO TEU PC (opcional)
+--------------------------------------------------------------------------------
+  scripts/import-schema-cloud.ps1          — import SQL pelo cliente mysql
+  scripts/test-api-health.ps1 -PhpBaseUrl  — teste a health.php
+  scripts/vercel-env-vars-reference.txt   — lista de variaveis
+
+================================================================================

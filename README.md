@@ -2,6 +2,8 @@
 
 Sistema profissional de gestao de eventos academicos com backend em PHP + MySQL e frontend em Next.js, pronto para deploy na Vercel.
 
+**Guia passo-a-passo para subir na Vercel (copiar variáveis, ordem dos projectos):** ver **`DEPLOY_VERCEL.txt`** na raiz do repo.
+
 ## Arquitetura
 
 - `api/`: projeto PHP na Vercel (Root Directory `api`). Os handlers ficam em `api/api/*.php` para obedecer a convencao de rotas `/api/*.php` da plataforma; no XAMPP, `api/.htaccess` encaminha `api/login.php` para esses arquivos.
