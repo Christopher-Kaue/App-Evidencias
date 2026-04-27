@@ -40,6 +40,8 @@ Sistema profissional de gestao de eventos academicos com backend em PHP + MySQL 
 
 A Vercel **nao hospeda MySQL**. E preciso um MySQL na internet (Railway, Aiven, Clever Cloud, RDS, etc.) com o schema importado. Dois projetos no mesmo repo: **API PHP** e **Web Next**.
 
+**Ordem recomendada (ligar o site ao banco sem erro de login):** (1) Criar MySQL na nuvem e importar `database/schema_cloud.sql`. (2) Criar projeto Vercel com **Root Directory** `api`, colocar `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` e `DB_SSL=1` se precisar; `GET .../api/health.php` deve mostrar `db: true`. (3) Criar projeto Vercel com **Root Directory** `web` e `NEXT_PUBLIC_API_BASE_URL=https://<mesma-url-do-passo-2>.vercel.app` (sem `/api`). (4) Redeploy do **web** apos salvar a variavel. (5) Entrar com `professor.teste@fadergs.com.br` / `Senha123` (nao use `admin@` nesta interface). (6) Desative **Deployment Protection** no projeto **PHP** se houver 403.
+
 ### 1) MySQL na nuvem
 
 1. Crie um servico MySQL e anote host, porta, usuario, senha e nome do banco.

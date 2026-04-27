@@ -43,17 +43,22 @@ export default function LoginPage() {
       const json = await readApiJson(res);
 
       if (!json.ok) {
+        if (json.status === 403) {
+          setErro(
+            "Apenas contas com perfil professor ou coordenador entram nesta tela. " +
+              "A conta admin@fadergs.com.br (e outras so com administrador) nao sao aceitas. " +
+              "Tente: professor.teste@fadergs.com.br ou coordenador.teste@fadergs.com.br, senha Senha123 " +
+              "(exige o seed do banco, ex. database/schema_cloud.sql importado no MySQL)."
+          );
+          return;
+        }
         const extra = json.detail ? ` (${json.detail})` : "";
         const baseMsg = json.message || "Falha no login.";
         const hint401 =
           json.status === 401
-            ? " Contas de teste apos schema.sql: professor.teste@fadergs.com.br ou coordenador.teste@fadergs.com.br, senha Senha123."
+            ? " Contas de teste: professor.teste@fadergs.com.br ou coordenador.teste@fadergs.com.br, senha Senha123 (se o schema/seed estiver no banco)."
             : "";
-        const hint403 =
-          json.status === 403
-            ? " O perfil administrador nao acessa esta interface — use professor ou coordenador."
-            : "";
-        setErro(baseMsg + extra + hint401 + hint403);
+        setErro(baseMsg + extra + hint401);
         return;
       }
 
