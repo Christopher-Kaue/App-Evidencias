@@ -7,7 +7,11 @@ import { fileURLToPath } from "node:url";
  * ao URL do teu projeto PHP (o ficheiro e re-gerado no worker, nao fica no teu PC apos build local).
  */
 const frontendRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
-const vercelJsonPath = path.join(frontendRoot, "vercel.json");
+const repoRoot = path.join(frontendRoot, "..");
+const vercelJsonPaths = [
+  path.join(frontendRoot, "vercel.json"),
+  path.join(repoRoot, "vercel.json")
+];
 
 const raw =
   (process.env.NEXT_PUBLIC_VERCEL_PHP_ORIGIN ?? "").trim() ||
@@ -34,13 +38,15 @@ if (!/^https?:\/\//i.test(base)) {
 
 const destination = `${base}/api/:path*`;
 
-const json = JSON.parse(fs.readFileSync(vercelJsonPath, "utf8"));
-const rewrite = json.rewrites?.find((w) => w.source === "/api-proxy/:path*");
-if (!rewrite) {
-  console.error("[sync-vercel-rewrite] Falta rewrite /api-proxy/:path* em vercel.json.");
-  process.exit(1);
+for (const vercelJsonPath of vercelJsonPaths) {
+  if (!fs.existsSync(vercelJsonPath)) continue;
+  const json = JSON.parse(fs.readFileSync(vercelJsonPath, "utf8"));
+  const rewrite = json.rewrites?.find((w) => w.source === "/api-proxy/:path*");
+  if (!rewrite) {
+    console.error(`[sync-vercel-rewrite] Falta rewrite /api-proxy/:path* em ${path.relative(repoRoot, vercelJsonPath)}.`);
+    process.exit(1);
+  }
+  rewrite.destination = destination;
+  fs.writeFileSync(vercelJsonPath, `${JSON.stringify(json, null, 2)}\n`);
+  console.log("[sync-vercel-rewrite]", path.relative(repoRoot, vercelJsonPath), "destination ->", destination);
 }
-
-rewrite.destination = destination;
-fs.writeFileSync(vercelJsonPath, `${JSON.stringify(json, null, 2)}\n`);
-console.log("[sync-vercel-rewrite] destination ->", destination);

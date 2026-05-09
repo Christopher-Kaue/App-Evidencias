@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/api-proxy/:path*",
+      "destination": "https://api-one-ashen-16.vercel.app/api/:path*"
+    }
+  ]
+}
