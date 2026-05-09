@@ -19,13 +19,12 @@ if (!process.env.VERCEL) {
 }
 
 if (!raw) {
-  console.error(
-    "[sync-vercel-rewrite] No projeto Web na Vercel defina NEXT_PUBLIC_API_BASE_URL\n" +
-      "(URL base do projeto PHP, ex.: https://teu-php.vercel.app sem barra final).\n" +
-      "Opcionalmente NEXT_PUBLIC_VERCEL_PHP_ORIGIN ou VERCEL_PHP_ORIGIN.\n" +
-      "Salve no painel e redeploy."
+  console.warn(
+    "[sync-vercel-rewrite] Sem NEXT_PUBLIC_API_BASE_URL / NEXT_PUBLIC_VERCEL_PHP_ORIGIN / VERCEL_PHP_ORIGIN.\n" +
+      "Mantendo o destination atual em vercel.json (commit ou valor anterior no build).\n" +
+      "Para apontar o proxy /api-proxy ao projeto PHP pela UI da Vercel, defina NEXT_PUBLIC_API_BASE_URL e redeploy."
   );
-  process.exit(1);
+  process.exit(0);
 }
 
 let base = raw.replace(/\/+$/, "");
