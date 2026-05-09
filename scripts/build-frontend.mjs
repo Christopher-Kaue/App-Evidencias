@@ -1,50 +1,20 @@
 /**
- * Replica o script `build` do frontend/package.json sem usar npm (PowerShell + Execution Policy).
+ * Build local na raiz do monorepo: delega para frontend/scripts/build-production.mjs e mantem compatibilidade.
  */
 import { spawnSync } from "node:child_process";
-import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
-const frontendRoot = path.join(root, "frontend");
-const frontendPkg = path.join(frontendRoot, "package.json");
+const prodScript = path.join(root, "frontend", "scripts", "build-production.mjs");
 
-function runNodeScript(relPath) {
-  const scriptPath = path.join(frontendRoot, relPath);
-  const r = spawnSync(process.execPath, [scriptPath], {
-    cwd: frontendRoot,
-    stdio: "inherit",
-    shell: false
-  });
-  if (r.error) {
-    console.error("[build-frontend]", r.error.message);
-    process.exit(1);
-  }
-  if (r.status !== 0) process.exit(r.status ?? 1);
-}
-
-let nextCli;
-try {
-  const require = createRequire(frontendPkg);
-  nextCli = require.resolve("next/dist/bin/next");
-} catch {
-  console.error("[build-frontend] Dependencias do frontend ausentes.");
-  process.exit(1);
-}
-
-runNodeScript("scripts/sync-vercel-rewrite.mjs");
-runNodeScript("scripts/clean-export-artifacts.mjs");
-
-const nb = spawnSync(process.execPath, [nextCli, "build"], {
-  cwd: frontendRoot,
+const r = spawnSync(process.execPath, [prodScript], {
+  cwd: root,
   stdio: "inherit",
   shell: false
 });
-if (nb.error) {
-  console.error("[build-frontend]", nb.error.message);
+if (r.error) {
+  console.error("[build-frontend]", r.error.message);
   process.exit(1);
 }
-if (nb.status !== 0) process.exit(nb.status ?? 1);
-
-runNodeScript("scripts/export-to-public.mjs");
+process.exit(r.status ?? 0);

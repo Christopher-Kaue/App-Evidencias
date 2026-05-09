@@ -2,9 +2,12 @@
   "name": "app-evidencias-web",
   "private": true,
   "version": "1.0.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "node ../scripts/run-next-cli.mjs dev",
-    "build": "node ../scripts/build-frontend.mjs",
+    "build": "node scripts/build-production.mjs",
     "start": "node ../scripts/run-next-cli.mjs start",
     "lint": "node ../scripts/run-next-cli.mjs lint"
   },
