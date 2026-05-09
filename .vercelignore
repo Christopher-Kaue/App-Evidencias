@@ -1,8 +1,8 @@
 uploads
-api/**
-web/node_modules
-web/.next
-web/.turbo
+backend/**
+frontend/node_modules
+frontend/.next
+frontend/.turbo
 node_modules
 .next
 .vercel

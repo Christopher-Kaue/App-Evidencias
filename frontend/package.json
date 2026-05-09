@@ -1,0 +1,21 @@
+{
+  "name": "app-evidencias-web",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "node ../scripts/run-next-cli.mjs dev",
+    "build": "node ../scripts/build-frontend.mjs",
+    "start": "node ../scripts/run-next-cli.mjs start",
+    "lint": "node ../scripts/run-next-cli.mjs lint"
+  },
+  "dependencies": {
+    "@types/node": "24.6.0",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "next": "16.2.4",
+    "pptxgenjs": "^4.0.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "typescript": "5.9.3"
+  }
+}

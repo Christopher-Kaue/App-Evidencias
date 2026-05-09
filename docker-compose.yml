@@ -1,0 +1,27 @@
+# PostgreSQL local — schema na primeira subida do volume.
+#
+# Subir apenas Postgres:
+#   docker compose up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: app-evidencias-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app_evidencias
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_evidencias_data:/var/lib/postgresql/data
+      - ./database/schema_postgres.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app_evidencias"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  pg_evidencias_data:

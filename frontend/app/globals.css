@@ -1,0 +1,413 @@
+:root {
+  color-scheme: light;
+  --brand-red: #c02030;
+  --brand-red-dark: #9f1725;
+  --brand-red-soft: #f8e9ec;
+  --text-main: #2a1114;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(180deg, #fff5f6 0%, #ffffff 45%, #fdecef 100%);
+  color: var(--text-main);
+}
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.card {
+  background: var(--white);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(77, 20, 26, 0.1);
+  padding: 18px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  background: var(--brand-red);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.btn.danger {
+  background: var(--brand-red-dark);
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.field {
+  width: 100%;
+  border: 1px solid #e6b8bf;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 6px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.error-text {
+  color: var(--brand-red-dark);
+  margin: 0;
+}
+
+.success-text {
+  color: #166534;
+  margin: 0;
+  font-weight: 600;
+}
+
+.login-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--white);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 20px 40px rgba(87, 22, 30, 0.16);
+}
+
+.login-logo {
+  width: 200px;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.app-shell-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.api-config-banner {
+  background: #fff0f2;
+  color: #7f1d28;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f2b3bc;
+  font-size: 0.9rem;
+}
+
+.api-config-banner code {
+  font-size: 0.85em;
+}
+
+.app-shell {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+}
+
+.sidebar {
+  background: var(--white);
+  color: var(--brand-red-dark);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-right: 1px solid #f2c0c7;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.sidebar-logo {
+  width: 170px;
+  max-width: 100%;
+  height: auto;
+}
+
+.role-badge {
+  margin: 0;
+  color: var(--brand-red);
+}
+
+.nav-list {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-item {
+  color: var(--brand-red-dark);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.nav-item.active,
+.nav-item:hover {
+  background: var(--brand-red-soft);
+}
+
+.logout-btn {
+  margin-top: auto;
+}
+
+.content {
+  padding: 24px;
+}
+
+.hero-card {
+  background: linear-gradient(135deg, var(--brand-red), var(--brand-red-dark));
+  color: var(--white);
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.kpi {
+  font-size: 2rem;
+  margin: 10px 0 0 0;
+  font-weight: 700;
+}
+
+.list-item {
+  border: 1px solid #f2c0c7;
+  border-radius: 12px;
+  background: #fffafb;
+  padding: 12px;
+}
+
+.confirm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(64, 10, 17, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 50;
+}
+
+.confirm-modal {
+  width: 100%;
+  max-width: 420px;
+  background: var(--white);
+  border: 1px solid #f2c0c7;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(87, 22, 30, 0.2);
+  padding: 18px;
+}
+
+.confirm-modal h3 {
+  margin: 0 0 8px 0;
+  color: var(--brand-red-dark);
+}
+
+.confirm-modal p {
+  margin: 0 0 16px 0;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.calendar-card {
+  background: var(--white);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(77, 20, 26, 0.1);
+  padding: 18px;
+}
+
+.calendar-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #f2c0c7;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.calendar-title {
+  margin: 0;
+  letter-spacing: 1px;
+  font-size: 1.1rem;
+  color: var(--brand-red-dark);
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calendar-nav .field {
+  margin-top: 0;
+  padding: 6px 10px;
+  width: auto;
+}
+
+.calendar-nav button {
+  border: 1px solid #d8a4ac;
+  background: var(--white);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--brand-red-dark);
+}
+
+.calendar-nav button.calendar-go {
+  background: var(--brand-red);
+  color: var(--white);
+  border-color: var(--brand-red-dark);
+}
+
+.calendar-total {
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border: 1px solid #d8d8d8;
+  background: #d8d8d8;
+  gap: 1px;
+}
+
+.calendar-weekday {
+  background: #f4f4f4;
+  text-align: center;
+  padding: 6px 0;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.calendar-cell {
+  background: #fbfffb;
+  min-height: 120px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-cell.is-other-month {
+  background: #f2f2f2;
+  color: #888;
+}
+
+.calendar-cell.is-today {
+  background: #e9f7ef;
+}
+
+.calendar-cell-day {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  line-height: 1.1;
+}
+
+.calendar-cell-day-name {
+  text-transform: lowercase;
+}
+
+.calendar-cell-day-number {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.calendar-event {
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--white);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  text-align: center;
+  background: #2a1114;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calendar-event-time {
+  font-weight: 700;
+}
+
+.calendar-event-title {
+  font-weight: 600;
+}
+
+.calendar-event-place {
+  opacity: 0.9;
+  font-size: 0.7rem;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.8rem;
+}
+
+.calendar-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #f4f4f4;
+}
+
+.calendar-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+@media (max-width: 960px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    gap: 10px;
+  }
+
+  .calendar-cell {
+    min-height: 90px;
+  }
+}
