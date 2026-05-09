@@ -14,6 +14,7 @@
     "build": "node scripts/build-frontend.mjs && node scripts/sync-root-public.mjs",
     "start": "node scripts/run-next-cli.mjs start",
     "lint": "node scripts/run-next-cli.mjs lint",
-    "docker:postgres": "docker compose up -d"
+    "docker:postgres": "docker compose up -d",
+    "docker:schema": "docker compose exec -T postgres psql -U postgres -d app_evidencias -f /docker-entrypoint-initdb.d/01-schema.sql"
   }
 }

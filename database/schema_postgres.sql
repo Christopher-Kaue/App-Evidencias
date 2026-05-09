@@ -1,6 +1,8 @@
 -- PostgreSQL 14+ — App Evidencias
 -- Criar DB: CREATE DATABASE app_evidencias ENCODING 'UTF8';
 -- Importar: psql -U postgres -d app_evidencias -f database/schema_postgres.sql
+-- Vercel/Neon: New Project > SQL Editor > colar este ficheiro inteiro > Run (depois copie DATABASE_URL para o projeto PHP).
+-- Docker local (volume ja inicializado): npm run docker:schema
 
 CREATE TABLE IF NOT EXISTS usuario (
     id SERIAL PRIMARY KEY,

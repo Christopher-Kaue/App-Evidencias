@@ -35,6 +35,7 @@ export async function readApiJson(res: Response): Promise<{
   data?: unknown;
   message?: string;
   detail?: string;
+  code?: string;
 }> {
   const text = await res.text();
   let parsed: Record<string, unknown> = {};
@@ -56,14 +57,15 @@ export async function readApiJson(res: Response): Promise<{
     status: res.status,
     data: parsed.data,
     message: typeof parsed.message === "string" ? parsed.message : undefined,
-    detail: typeof parsed.detail === "string" ? parsed.detail : undefined
+    detail: typeof parsed.detail === "string" ? parsed.detail : undefined,
+    code: typeof parsed.code === "string" ? parsed.code : undefined
   };
 }
 
 export async function apiRequest(
   path: string,
   init?: RequestInit
-): Promise<{ ok: boolean; status: number; data?: unknown; message?: string; detail?: string }> {
+): Promise<{ ok: boolean; status: number; data?: unknown; message?: string; detail?: string; code?: string }> {
   const res = await apiFetch(path, init);
   return readApiJson(res);
 }

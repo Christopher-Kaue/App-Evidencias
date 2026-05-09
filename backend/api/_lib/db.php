@@ -48,8 +48,60 @@ function load_env_file(string $path): void
 }
 
 /**
+ * Interpreta DATABASE_URL (postgresql:// ou postgres://), usado por Neon, Supabase, etc.
+ *
+ * @return array{host:string,port:string,name:string,user:string,pass:string,sslmode:string}|null
+ */
+function parse_postgres_database_url(string $url): ?array
+{
+    $trimmed = trim($url);
+    if ($trimmed === '') {
+        return null;
+    }
+
+    $parts = parse_url($trimmed);
+    if ($parts === false || empty($parts['scheme'])) {
+        return null;
+    }
+
+    $scheme = strtolower((string) $parts['scheme']);
+    if (!in_array($scheme, ['postgres', 'postgresql'], true)) {
+        return null;
+    }
+
+    $host = isset($parts['host']) ? (string) $parts['host'] : '127.0.0.1';
+    $port = isset($parts['port']) ? (string) $parts['port'] : '5432';
+    $user = isset($parts['user']) ? rawurldecode((string) $parts['user']) : 'postgres';
+    $pass = isset($parts['pass']) ? rawurldecode((string) $parts['pass']) : '';
+    $path = isset($parts['path']) ? (string) $parts['path'] : '';
+    $name = $path !== '' ? ltrim($path, '/') : 'postgres';
+    if ($name === '') {
+        $name = 'postgres';
+    }
+
+    $sslmode = 'prefer';
+    if (!empty($parts['query'])) {
+        parse_str((string) $parts['query'], $q);
+        if (isset($q['sslmode']) && is_string($q['sslmode']) && $q['sslmode'] !== '') {
+            $sslmode = $q['sslmode'];
+        }
+    }
+
+    return [
+        'host' => $host,
+        'port' => $port,
+        'name' => $name,
+        'user' => $user,
+        'pass' => $pass,
+        'sslmode' => $sslmode,
+    ];
+}
+
+/**
  * Conexao unica (singleton) com PostgreSQL.
  * Requer extensao PHP pdo_pgsql.
+ *
+ * Prioridade: DATABASE_URL (Neon/Vercel) > DB_HOST / DB_NAME / ...
  */
 function db(): PDO
 {
@@ -60,18 +112,30 @@ function db(): PDO
 
     load_env_file(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env');
 
-    $host = getenv('DB_HOST') ?: '127.0.0.1';
-    $port = getenv('DB_PORT') ?: '5432';
-    $name = getenv('DB_NAME') ?: 'app_evidencias';
-    $user = getenv('DB_USER') ?: 'postgres';
-    $pass = getenv('DB_PASS') ?? '';
-    if ($pass === false) {
-        $pass = '';
-    }
+    $dbUrl = getenv('DATABASE_URL');
+    $parsedUrl = is_string($dbUrl) ? parse_postgres_database_url($dbUrl) : null;
 
-    $ssl = getenv('DB_SSL');
-    $sslOn = $ssl === '1' || strcasecmp((string) $ssl, 'true') === 0;
-    $sslMode = $sslOn ? 'require' : 'prefer';
+    if ($parsedUrl !== null) {
+        $host = $parsedUrl['host'];
+        $port = $parsedUrl['port'];
+        $name = $parsedUrl['name'];
+        $user = $parsedUrl['user'];
+        $pass = $parsedUrl['pass'];
+        $sslMode = $parsedUrl['sslmode'];
+    } else {
+        $host = getenv('DB_HOST') ?: '127.0.0.1';
+        $port = getenv('DB_PORT') ?: '5432';
+        $name = getenv('DB_NAME') ?: 'app_evidencias';
+        $user = getenv('DB_USER') ?: 'postgres';
+        $pass = getenv('DB_PASS') ?? '';
+        if ($pass === false) {
+            $pass = '';
+        }
+
+        $ssl = getenv('DB_SSL');
+        $sslOn = $ssl === '1' || strcasecmp((string) $ssl, 'true') === 0;
+        $sslMode = $sslOn ? 'require' : 'prefer';
+    }
 
     $dsn = "pgsql:host={$host};port={$port};dbname={$name};sslmode={$sslMode}";
 

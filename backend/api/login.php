@@ -151,5 +151,22 @@ try {
         ]
     ]);
 } catch (Throwable $e) {
-    json_response(['message' => 'Erro interno.', 'detail' => $e->getMessage()], 500);
+    $msg = $e->getMessage();
+    $sqlState = '';
+    if ($e instanceof PDOException && isset($e->errorInfo[0])) {
+        $sqlState = (string) $e->errorInfo[0];
+    }
+    $relationMissing = $sqlState === '42P01'
+        || stripos($msg, 'does not exist') !== false
+        || (stripos($msg, 'relation') !== false && stripos($msg, 'does not exist') !== false);
+
+    if ($relationMissing) {
+        json_response([
+            'message' => 'Base PostgreSQL sem tabelas do aplicativo. No repositorio, execute database/schema_postgres.sql na mesma base (Neon: SQL Editor; local Docker: npm run docker:schema). Depois configure DATABASE_URL ou DB_* no projeto PHP na Vercel.',
+            'code' => 'schema_missing',
+            'detail' => $msg,
+        ], 503);
+    }
+
+    json_response(['message' => 'Erro interno.', 'detail' => $msg], 500);
 }

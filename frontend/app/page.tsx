@@ -53,6 +53,10 @@ export default function LoginPage() {
       const json = await readApiJson(res);
 
       if (!json.ok) {
+        if (json.code === "schema_missing") {
+          setErro(json.message ?? LOGIN_HELP_POSTGRES);
+          return;
+        }
         const apiMsg = json.message ?? "";
         if (json.status === 403 || /perfil sem acesso ao sistema/i.test(apiMsg)) {
           setErro(LOGIN_MSG_PERFIL_NAO_PERMITIDO);
