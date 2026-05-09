@@ -1,5 +1,7 @@
 uploads
-backend/**
+# Nao usar backend/** — esconde o PHP na deploy da API (Root Directory backend).
+backend/.env
+backend/.env.*
 frontend/node_modules
 frontend/.next
 frontend/.turbo

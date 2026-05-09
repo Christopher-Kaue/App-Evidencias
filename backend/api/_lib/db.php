@@ -98,6 +98,42 @@ function parse_postgres_database_url(string $url): ?array
 }
 
 /**
+ * Neon routing sem SNI completo (PHP/libpq na Vercel): exige endpoint no handshake.
+ *
+ * @see https://neon.com/docs/connect/connection-errors#the-endpoint-id-is-not-specified
+ */
+function neon_endpoint_id_from_host(string $host): ?string
+{
+    if ($host === '' || !str_contains($host, '.neon.tech')) {
+        return null;
+    }
+
+    $first = explode('.', $host, 2)[0];
+    if ($first === '' || !str_starts_with($first, 'ep-')) {
+        return null;
+    }
+
+    if (str_ends_with($first, '-pooler')) {
+        return substr($first, 0, -strlen('-pooler'));
+    }
+
+    return $first;
+}
+
+/**
+ * libpq aceita `dbname=nome options=endpoint=ep-...` no campo dbname (workaround Neon).
+ */
+function pgsql_dbname_for_dsn(string $logicalDbName, string $host): string
+{
+    $endpoint = neon_endpoint_id_from_host($host);
+    if ($endpoint === null) {
+        return $logicalDbName;
+    }
+
+    return $logicalDbName . ' options=endpoint=' . $endpoint;
+}
+
+/**
  * Conexao unica (singleton) com PostgreSQL.
  * Requer extensao PHP pdo_pgsql.
  *
@@ -137,7 +173,8 @@ function db(): PDO
         $sslMode = $sslOn ? 'require' : 'prefer';
     }
 
-    $dsn = "pgsql:host={$host};port={$port};dbname={$name};sslmode={$sslMode}";
+    $dbForDsn = pgsql_dbname_for_dsn($name, $host);
+    $dsn = "pgsql:host={$host};port={$port};dbname={$dbForDsn};sslmode={$sslMode}";
 
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
