@@ -7,6 +7,17 @@ import { apiFetch, getApiConfigErrorMessage, readApiJson } from "../lib/api-fetc
 import { setSessionUser, type SessionUser } from "../lib/session";
 import fadergsLogo from "./assets/fadergs-logo.png";
 
+/** Texto único para contas de teste + schema (PostgreSQL). */
+const LOGIN_HELP_POSTGRES =
+  "Contas de teste: professor.teste@fadergs.com.br ou coordenador.teste@fadergs.com.br, senha Senha123. " +
+  "A base deve estar criada com database/schema_postgres.sql.";
+
+/** Quando a API devolve 403 (só administrador ou sem perfil professor/coordenador). */
+const LOGIN_MSG_PERFIL_NAO_PERMITIDO =
+  "Apenas contas com perfil professor ou coordenador entram nesta aplicação. " +
+  "Contas só com perfil administrador (por exemplo admin@fadergs.com.br) não são aceites. " +
+  LOGIN_HELP_POSTGRES;
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -42,21 +53,14 @@ export default function LoginPage() {
       const json = await readApiJson(res);
 
       if (!json.ok) {
-        if (json.status === 403) {
-          setErro(
-            "Apenas contas com perfil professor ou coordenador entram nesta tela. " +
-              "A conta admin@fadergs.com.br (e outras so com administrador) nao sao aceitas. " +
-              "Tente: professor.teste@fadergs.com.br ou coordenador.teste@fadergs.com.br, senha Senha123 " +
-              "(exige o schema no PostgreSQL: database/schema_postgres.sql)."
-          );
+        const apiMsg = json.message ?? "";
+        if (json.status === 403 || /perfil sem acesso ao sistema/i.test(apiMsg)) {
+          setErro(LOGIN_MSG_PERFIL_NAO_PERMITIDO);
           return;
         }
         const extra = json.detail ? ` (${json.detail})` : "";
         const baseMsg = json.message || "Falha no login.";
-        const hint401 =
-          json.status === 401
-            ? " Contas de teste: professor.teste@fadergs.com.br ou coordenador.teste@fadergs.com.br, senha Senha123 (se o schema/seed estiver no banco)."
-            : "";
+        const hint401 = json.status === 401 ? ` ${LOGIN_HELP_POSTGRES}` : "";
         setErro(baseMsg + extra + hint401);
         return;
       }
