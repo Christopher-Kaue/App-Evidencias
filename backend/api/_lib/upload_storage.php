@@ -114,5 +114,7 @@ function upload_store_file(PDO $pdo, string $fileName, string $extension, string
     $stmt->execute();
     $id = (int) $stmt->fetchColumn();
 
-    return ['url' => upload_public_base_url() . '/api/media.php?id=' . $id];
+    $kind = str_starts_with($mime, 'video/') ? 'video' : 'image';
+
+    return ['url' => upload_public_base_url() . '/api/media.php?id=' . $id . '&kind=' . $kind];
 }

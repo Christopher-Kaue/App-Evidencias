@@ -78,6 +78,35 @@ body {
   margin: 0;
 }
 
+.media-preview-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.media-preview-link {
+  font-size: 13px;
+  color: var(--brand-red-dark);
+}
+
+.media-thumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.media-thumb-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #f2c0c7;
+  border-radius: 10px;
+  background: #fffafb;
+}
+
 .success-text {
   color: #166534;
   margin: 0;

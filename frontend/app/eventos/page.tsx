@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { dedupeById } from "../../lib/dedupe-by-id";
 import { apiFetch, apiRequest, readApiJson } from "../../lib/api-fetch";
 import { AppShell } from "../components/AppShell";
+import { MediaPreview } from "../components/MediaPreview";
+import { getMediaType } from "../../lib/media-url";
 import { authHeaders, getSessionUser, SessionUser } from "../../lib/session";
 
 type Evento = {
@@ -39,13 +41,6 @@ type AreaCurso = {
 type EventCardData = {
   midias: string[];
   capa: string;
-};
-
-const getMediaType = (url: string): "image" | "video" | "other" => {
-  const clean = url.toLowerCase().split("?")[0];
-  if (/\.(jpg|jpeg|png|webp|gif)$/.test(clean)) return "image";
-  if (/\.(mp4|mov|avi|mkv|webm)$/.test(clean)) return "video";
-  return "other";
 };
 
 const parseEventCard = (card?: string): EventCardData => {
@@ -404,11 +399,9 @@ export default function EventosPage() {
             {capaEvento && (
               <div className="list-item">
                 <strong>Capa do evento</strong>
-                <img
-                  src={capaEvento}
-                  alt="Capa do evento"
-                  style={{ display: "block", width: "100%", maxWidth: 360, height: 180, objectFit: "cover", borderRadius: 12, marginTop: 8 }}
-                />
+                <div style={{ marginTop: 8 }}>
+                  <MediaPreview url={capaEvento} alt="Capa do evento" variant="full" />
+                </div>
                 <button className="btn danger" type="button" style={{ marginTop: 8 }} onClick={() => setCapaEvento("")}>
                   Remover capa
                 </button>
@@ -431,45 +424,34 @@ export default function EventosPage() {
               </div>
             )}
             {midias.length > 0 && (
-              <div className="grid">
+              <div className="media-thumb-list">
                 {midias.map((midia, index) => (
-                  <div key={`${midia}-${index}`} className="list-item">
-                    <p style={{ margin: "0 0 8px 0" }}>{midia}</p>
-                    {getMediaType(midia) === "image" && (
-                      <img
-                        src={midia}
-                        alt="Anexo de evento"
-                        style={{ width: "100%", maxWidth: 360, borderRadius: 10, marginBottom: 8 }}
-                      />
-                    )}
-                    {getMediaType(midia) === "video" && (
-                      <video
-                        src={midia}
-                        controls
-                        style={{ width: "100%", maxWidth: 420, borderRadius: 10, marginBottom: 8 }}
-                      />
-                    )}
-                    <button
-                      className="btn danger"
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        removerMidia(midia, index);
-                      }}
-                    >
-                      Remover imagem
-                    </button>
-                    {getMediaType(midia) === "image" && (
+                  <div key={`${midia}-${index}`} className="media-thumb-item">
+                    <MediaPreview url={midia} alt={`Anexo ${index + 1}`} variant="thumb" />
+                    <div className="row" style={{ margin: 0 }}>
                       <button
-                        className="btn"
+                        className="btn danger"
                         type="button"
-                        style={{ marginLeft: 8 }}
-                        disabled={capaEvento === midia}
-                        onClick={() => setCapaEvento(midia)}
+                        style={{ padding: "6px 10px", fontSize: 13 }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          removerMidia(midia, index);
+                        }}
                       >
-                        {capaEvento === midia ? "Capa fixada" : "Fixar como capa"}
+                        Remover
                       </button>
-                    )}
+                      {getMediaType(midia) === "image" && (
+                        <button
+                          className="btn"
+                          type="button"
+                          style={{ padding: "6px 10px", fontSize: 13 }}
+                          disabled={capaEvento === midia}
+                          onClick={() => setCapaEvento(midia)}
+                        >
+                          {capaEvento === midia ? "Capa fixada" : "Fixar capa"}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -497,19 +479,9 @@ export default function EventosPage() {
               return (
                 <div key={ev.id} className="list-item">
                   {capa && (
-                    <img
-                      src={capa}
-                      alt={`Capa do evento ${ev.nome}`}
-                      style={{
-                        width: "100%",
-                        maxWidth: 420,
-                        height: 220,
-                        objectFit: "cover",
-                        borderRadius: 12,
-                        display: "block",
-                        marginBottom: 10
-                      }}
-                    />
+                    <div style={{ marginBottom: 10, maxWidth: 420 }}>
+                      <MediaPreview url={capa} alt={`Capa do evento ${ev.nome}`} variant="full" />
+                    </div>
                   )}
                   <strong>{ev.nome}</strong>
                   <p style={{ margin: "8px 0" }}>
@@ -536,31 +508,15 @@ export default function EventosPage() {
                     </p>
                   )}
                   {Array.isArray(anexos) && anexos.length > 0 && (
-                    <div className="grid" style={{ marginBottom: 8 }}>
-                      <p style={{ margin: 0 }}>Anexos: {anexos.length}</p>
-                      {anexos.map((anexo, anexoIndex) => (
-                        <div key={`${anexo}-${anexoIndex}`}>
-                          {getMediaType(anexo) === "image" && (
-                            <img
-                              src={anexo}
-                              alt="Imagem do evento"
-                              style={{ width: "100%", maxWidth: 300, borderRadius: 10 }}
-                            />
-                          )}
-                          {getMediaType(anexo) === "video" && (
-                            <video
-                              src={anexo}
-                              controls
-                              style={{ width: "100%", maxWidth: 360, borderRadius: 10 }}
-                            />
-                          )}
-                          {getMediaType(anexo) === "other" && (
-                            <a href={anexo} target="_blank" rel="noreferrer">
-                              Abrir anexo
-                            </a>
-                          )}
-                        </div>
-                      ))}
+                    <div style={{ marginBottom: 8 }}>
+                      <p style={{ margin: "0 0 8px 0" }}>Anexos: {anexos.length}</p>
+                      <div className="media-thumb-list">
+                        {anexos.map((anexo, anexoIndex) => (
+                          <div key={`${anexo}-${anexoIndex}`} className="media-thumb-item">
+                            <MediaPreview url={anexo} alt={`Anexo ${anexoIndex + 1}`} variant="thumb" />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                   <div className="row">
