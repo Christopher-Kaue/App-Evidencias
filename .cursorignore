@@ -1,0 +1,16 @@
+﻿# Artefatos de build — nao indexar nem mostrar no explorador do Cursor
+public/
+frontend/out/
+frontend/public/
+
+# Dependencias e cache
+node_modules/
+.next/
+frontend/.next/
+
+.vercel/
+vendor/
+
+# Uploads locais
+storage/uploads/
+uploads/

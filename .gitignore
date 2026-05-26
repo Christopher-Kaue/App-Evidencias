@@ -1,11 +1,26 @@
-node_modules
-.next
+# Dependencias
+node_modules/
+frontend/node_modules/
+
+# Next.js
+.next/
+frontend/.next/
+frontend/out/
+
+# Export estatico (gerado por npm run build -> sync-root-public)
+public/
+
+# Ambiente e deploy
 .env.local
 backend/.env
-frontend/node_modules
-frontend/.next
-vendor
-storage/uploads
-uploads
-.vercel
-# Gerado no build na Vercel (export estatico -> public na raiz)
+.vercel/
+
+# PHP / uploads
+vendor/
+storage/uploads/
+uploads/
+
+# SO e logs
+.DS_Store
+Thumbs.db
+*.log

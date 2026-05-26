@@ -1,0 +1,23 @@
+{
+  "files.exclude": {
+    "public": true,
+    "frontend/out": true,
+    "frontend/public": true,
+    "**/node_modules": true,
+    "**/.next": true,
+    ".vercel": true
+  },
+  "search.exclude": {
+    "public": true,
+    "frontend/out": true,
+    "frontend/public": true,
+    "**/node_modules": true,
+    "**/.next": true
+  },
+  "files.watcherExclude": {
+    "public/**": true,
+    "frontend/out/**": true,
+    "**/node_modules/**": true,
+    "**/.next/**": true
+  }
+}
