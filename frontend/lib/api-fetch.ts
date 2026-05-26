@@ -42,6 +42,25 @@ export async function readApiJson(res: Response): Promise<{
   try {
     parsed = text ? (JSON.parse(text) as Record<string, unknown>) : {};
   } catch {
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try {
+        parsed = JSON.parse(text.slice(start, end + 1)) as Record<string, unknown>;
+      } catch {
+        /* fall through to HTML hint */
+      }
+    }
+    if (Object.keys(parsed).length > 0) {
+      return {
+        ok: res.ok,
+        status: res.status,
+        data: parsed.data,
+        message: typeof parsed.message === "string" ? parsed.message : undefined,
+        detail: typeof parsed.detail === "string" ? parsed.detail : undefined,
+        code: typeof parsed.code === "string" ? parsed.code : undefined
+      };
+    }
     const looksHtml = /^\s*</.test(text) || /<html[\s>]/i.test(text);
     const hint = looksHtml
       ? " A API devolveu HTML (rewrite errado ou projeto PHP inexistente). Vercel Web: confira NEXT_PUBLIC_API_BASE_URL no build e GET https://<php>/api/health.php. Local: npm run dev:api + URL http://127.0.0.1:9999."

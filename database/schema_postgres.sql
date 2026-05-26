@@ -89,3 +89,12 @@ CREATE TABLE IF NOT EXISTS eventoevidencia (
 );
 
 CREATE INDEX IF NOT EXISTS ix_eventoevidencia_evento ON eventoevidencia (idevento);
+
+-- Midias de eventos (upload). Na Vercel o disco e somente leitura; arquivos ficam no PostgreSQL.
+CREATE TABLE IF NOT EXISTS midia_arquivo (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL DEFAULT 'application/octet-stream',
+    conteudo BYTEA NOT NULL,
+    dtcadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

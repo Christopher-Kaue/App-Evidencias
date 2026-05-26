@@ -16,7 +16,8 @@
     "lint": "node scripts/run-next-cli.mjs lint",
     "docker:postgres": "docker compose up -d",
     "docker:schema": "docker compose exec -T postgres psql -U postgres -d app_evidencias -f /docker-entrypoint-initdb.d/01-schema.sql",
-    "db:apply-remote": "node scripts/apply-schema-postgres.mjs"
+    "db:apply-remote": "node scripts/apply-schema-postgres.mjs",
+    "db:migrate-midia": "node scripts/apply-midia-migration.mjs"
   },
   "devDependencies": {
     "pg": "^8.13.1"
