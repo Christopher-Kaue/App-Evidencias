@@ -8,6 +8,10 @@ function upload_public_base_url(): string
     if ($base !== false && trim((string) $base) !== '') {
         return rtrim(trim((string) $base), '/');
     }
+    if (getenv('VERCEL') !== false && getenv('VERCEL') !== '') {
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        return 'https://' . $host;
+    }
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
