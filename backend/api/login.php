@@ -6,34 +6,42 @@ apply_cors('POST,OPTIONS', 'Content-Type');
 require_once __DIR__ . '/_lib/db.php';
 require_once __DIR__ . '/_lib/response.php';
 
-function ensure_test_user(PDO $pdo, string $email, string $senha): void
+function normalize_login_nome(string $nome): string
+{
+    return mb_strtolower(trim($nome), 'UTF-8');
+}
+
+function ensure_test_user(PDO $pdo, string $nomeLogin, string $senha): void
 {
     if ($senha !== 'Senha123') {
         return;
     }
 
     $contas = [
-        'professor.teste@fadergs.com.br' => [
+        'professor teste' => [
             'nome' => 'Professor Teste',
+            'email' => 'professor.teste@fadergs.com.br',
             'celular' => '51990000001',
             'perfil' => 'professor',
         ],
-        'coordenador.teste@fadergs.com.br' => [
+        'coordenador teste' => [
             'nome' => 'Coordenador Teste',
+            'email' => 'coordenador.teste@fadergs.com.br',
             'celular' => '51990000002',
             'perfil' => 'coordenador',
         ],
     ];
 
-    if (!isset($contas[$email])) {
+    $chave = normalize_login_nome($nomeLogin);
+    if (!isset($contas[$chave])) {
         return;
     }
 
-    $conta = $contas[$email];
+    $conta = $contas[$chave];
     $hash = password_hash($senha, PASSWORD_BCRYPT);
 
     $stmt = $pdo->prepare('SELECT id FROM usuario WHERE email = :email LIMIT 1');
-    $stmt->execute([':email' => $email]);
+    $stmt->execute([':email' => $conta['email']]);
     $usuario = $stmt->fetch(\PDO::FETCH_ASSOC);
 
     if ($usuario) {
@@ -57,7 +65,7 @@ function ensure_test_user(PDO $pdo, string $email, string $senha): void
         ');
         $stmtInsert->execute([
             ':nome' => $conta['nome'],
-            ':email' => $email,
+            ':email' => $conta['email'],
             ':celular' => $conta['celular'],
             ':senha' => $hash,
         ]);
@@ -96,29 +104,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $body = read_json_body();
-    $emailRaw = isset($body['email']) ? trim((string)$body['email']) : '';
+    $nomeRaw = isset($body['nome']) ? trim((string)$body['nome']) : '';
     $senha = isset($body['senha']) ? (string)$body['senha'] : '';
-    if ($emailRaw === '' || $senha === '') {
-        json_response(['message' => 'Informe email e senha.'], 422);
+    if ($nomeRaw === '' || $senha === '') {
+        json_response(['message' => 'Informe nome e senha.'], 422);
     }
-
-    $email = strtolower($emailRaw);
 
     $pdo = db();
 
     $stmt = $pdo->prepare('
         SELECT id, nome, email, senha
         FROM usuario
-        WHERE email = :email AND status = \'A\'
+        WHERE LOWER(TRIM(nome)) = LOWER(:nome) AND status = \'A\'
         LIMIT 1
     ');
-    $stmt->execute([':email' => $email]);
+    $stmt->execute([':nome' => $nomeRaw]);
     $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
     if (!$user || !password_verify($senha, (string)$user['senha'])) {
-        ensure_test_user($pdo, $email, $senha);
+        ensure_test_user($pdo, $nomeRaw, $senha);
 
-        $stmt->execute([':email' => $email]);
+        $stmt->execute([':nome' => $nomeRaw]);
         $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if (!$user || !password_verify($senha, (string)$user['senha'])) {
@@ -126,7 +132,7 @@ try {
         }
     }
 
-    ensure_test_user($pdo, $email, $senha);
+    ensure_test_user($pdo, $nomeRaw, $senha);
 
     $stmtPerfil = $pdo->prepare('
         SELECT nome FROM perfil

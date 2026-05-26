@@ -9,17 +9,16 @@ import fadergsLogo from "./assets/fadergs-logo.png";
 
 /** Texto único para contas de teste + schema (PostgreSQL). */
 const LOGIN_HELP_POSTGRES =
-  "Contas de teste: professor.teste@fadergs.com.br ou coordenador.teste@fadergs.com.br, senha Senha123. " +
+  "Contas de teste: nome Professor Teste ou Coordenador Teste, senha Senha123. " +
   "A base deve estar criada com database/schema_postgres.sql.";
 
 /** Quando a API devolve 403 (só administrador ou sem perfil professor/coordenador). */
 const LOGIN_MSG_PERFIL_NAO_PERMITIDO =
   "Apenas contas com perfil professor ou coordenador entram nesta aplicação. " +
-  "Contas só com perfil administrador (por exemplo admin@fadergs.com.br) não são aceites. " +
   LOGIN_HELP_POSTGRES;
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [nome, setNome] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,7 +39,7 @@ export default function LoginPage() {
     setLoading(true);
     setErro("");
     const payload = {
-      email: email.trim().toLowerCase(),
+      nome: nome.trim(),
       senha
     };
     try {
@@ -96,22 +95,19 @@ export default function LoginPage() {
           </p>
         )}
         <form onSubmit={onSubmit} className="grid" autoComplete="on">
-          <label htmlFor="login-email">
-            Email
+          <label htmlFor="login-nome">
+            Nome
             <input
-              id="login-email"
-              name="email"
-              type="email"
-              inputMode="email"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
+              id="login-nome"
+              name="nome"
+              type="text"
+              autoCapitalize="words"
               autoComplete="username"
               className="field"
               required
               suppressHydrationWarning
-              value={email ?? ""}
-              onChange={(ev) => setEmail(ev.target.value ?? "")}
+              value={nome ?? ""}
+              onChange={(ev) => setNome(ev.target.value ?? "")}
             />
           </label>
           <label htmlFor="login-senha">
