@@ -25,7 +25,7 @@ const navItems: NavItem[] = [
 export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<SessionUser | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(() => getSessionUser());
   const [semApiUrl, setSemApiUrl] = useState(false);
 
   useEffect(() => {
