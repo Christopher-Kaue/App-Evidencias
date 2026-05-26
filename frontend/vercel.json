@@ -4,6 +4,7 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "out",
+  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/api-proxy/:path*",

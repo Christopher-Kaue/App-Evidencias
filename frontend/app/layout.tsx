@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { RefreshRedirectHome } from "./components/RefreshRedirectHome";
 
 export const metadata: Metadata = {
   title: "App Evidencias - FADERGS",
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <RefreshRedirectHome />
+        {children}
+      </body>
     </html>
   );
 }

@@ -45,3 +45,11 @@ if (nb.error) {
   process.exit(1);
 }
 if (nb.status !== 0) process.exit(nb.status ?? 1);
+
+const repoRoot = path.join(frontendRoot, "..");
+const patch404 = spawnSync(process.execPath, ["scripts/patch-static-404.mjs"], {
+  cwd: repoRoot,
+  stdio: "inherit",
+  shell: false
+});
+if (patch404.status !== 0) process.exit(patch404.status ?? 1);
