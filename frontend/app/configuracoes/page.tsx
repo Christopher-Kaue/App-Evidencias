@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "../../lib/api-fetch";
+import { useFlashMessage } from "../../lib/use-flash-message";
 import { AppShell } from "../components/AppShell";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { authHeaders, getSessionUser, SessionUser } from "../../lib/session";
 
 type Item = {
@@ -22,6 +24,7 @@ type SectionProps = {
 
 function Section({ titulo, itens, placeholder, vazio, onAdd, onRemove }: SectionProps) {
   const [valor, setValor] = useState("");
+  const [confirmarRemover, setConfirmarRemover] = useState<Item | null>(null);
 
   const handleAdd = async () => {
     const nome = valor.trim();
@@ -59,12 +62,28 @@ function Section({ titulo, itens, placeholder, vazio, onAdd, onRemove }: Section
             style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
           >
             <span>{i.nome}</span>
-            <button className="btn danger" type="button" onClick={() => void onRemove(i.id)}>
+            <button className="btn danger" type="button" onClick={() => setConfirmarRemover(i)}>
               Remover
             </button>
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={confirmarRemover !== null}
+        title={`Remover ${titulo.toLowerCase()}`}
+        message={
+          confirmarRemover
+            ? `Voce realmente deseja excluir "${confirmarRemover.nome}"?`
+            : "Voce realmente deseja excluir?"
+        }
+        confirmLabel="Sim, excluir"
+        onConfirm={() => {
+          if (confirmarRemover) void onRemove(confirmarRemover.id);
+          setConfirmarRemover(null);
+        }}
+        onCancel={() => setConfirmarRemover(null)}
+      />
     </div>
   );
 }
@@ -78,7 +97,7 @@ export default function ConfiguracoesPage() {
   const [areas, setAreas] = useState<Item[]>([]);
 
   const [erro, setErro] = useState("");
-  const [mensagem, setMensagem] = useState("");
+  const { message: sucesso, showSuccess, clear: clearSucesso } = useFlashMessage();
 
   useEffect(() => {
     const session = getSessionUser();
@@ -116,15 +135,10 @@ export default function ConfiguracoesPage() {
 
   const limparMensagens = () => {
     setErro("");
-    setMensagem("");
+    clearSucesso();
   };
 
-  const adicionarGenerico = async (
-    endpoint: string,
-    nome: string,
-    descricaoErro: string,
-    descricaoSucesso: string
-  ) => {
+  const adicionarGenerico = async (endpoint: string, nome: string, descricaoErro: string) => {
     const session = getSessionUser();
     if (!session) return;
     limparMensagens();
@@ -138,19 +152,14 @@ export default function ConfiguracoesPage() {
         setErro((json.message || descricaoErro) + (json.detail ? ` (${json.detail})` : ""));
         return;
       }
-      setMensagem(descricaoSucesso);
+      showSuccess();
       await carregar();
     } catch (err) {
       setErro(err instanceof Error ? err.message : descricaoErro);
     }
   };
 
-  const removerGenerico = async (
-    endpoint: string,
-    id: number,
-    descricaoErro: string,
-    descricaoSucesso: string
-  ) => {
+  const removerGenerico = async (endpoint: string, id: number, descricaoErro: string) => {
     const session = getSessionUser();
     if (!session) return;
     limparMensagens();
@@ -163,7 +172,7 @@ export default function ConfiguracoesPage() {
         setErro((json.message || descricaoErro) + (json.detail ? ` (${json.detail})` : ""));
         return;
       }
-      setMensagem(descricaoSucesso);
+      showSuccess("Excluido com sucesso.");
       await carregar();
     } catch (err) {
       setErro(err instanceof Error ? err.message : descricaoErro);
@@ -178,8 +187,8 @@ export default function ConfiguracoesPage() {
           <p style={{ marginTop: 0 }}>
             Gerencie locais, salas e areas do curso utilizados no cadastro de eventos.
           </p>
+          {sucesso && <p className="success-text">{sucesso}</p>}
           {erro && <p className="error-text">{erro}</p>}
-          {mensagem && <p style={{ margin: 0, color: "#1f7a3b" }}>{mensagem}</p>}
         </div>
 
         <Section
@@ -187,8 +196,8 @@ export default function ConfiguracoesPage() {
           itens={locais}
           placeholder="Nome do novo local"
           vazio="Nenhum local cadastrado."
-          onAdd={(nome) => adicionarGenerico("/api/locais.php", nome, "Falha ao cadastrar local.", "Local cadastrado com sucesso.")}
-          onRemove={(id) => removerGenerico("/api/locais.php", id, "Falha ao remover local.", "Local removido com sucesso.")}
+          onAdd={(nome) => adicionarGenerico("/api/locais.php", nome, "Falha ao cadastrar local.")}
+          onRemove={(id) => removerGenerico("/api/locais.php", id, "Falha ao remover local.")}
         />
 
         <Section
@@ -196,8 +205,8 @@ export default function ConfiguracoesPage() {
           itens={salas}
           placeholder="Nome da nova sala"
           vazio="Nenhuma sala cadastrada."
-          onAdd={(nome) => adicionarGenerico("/api/salas.php", nome, "Falha ao cadastrar sala.", "Sala cadastrada com sucesso.")}
-          onRemove={(id) => removerGenerico("/api/salas.php", id, "Falha ao remover sala.", "Sala removida com sucesso.")}
+          onAdd={(nome) => adicionarGenerico("/api/salas.php", nome, "Falha ao cadastrar sala.")}
+          onRemove={(id) => removerGenerico("/api/salas.php", id, "Falha ao remover sala.")}
         />
 
         <Section
@@ -205,8 +214,8 @@ export default function ConfiguracoesPage() {
           itens={areas}
           placeholder="Nome da nova area do curso"
           vazio="Nenhuma area do curso cadastrada."
-          onAdd={(nome) => adicionarGenerico("/api/areas.php", nome, "Falha ao cadastrar area.", "Area do curso cadastrada com sucesso.")}
-          onRemove={(id) => removerGenerico("/api/areas.php", id, "Falha ao remover area.", "Area do curso removida com sucesso.")}
+          onAdd={(nome) => adicionarGenerico("/api/areas.php", nome, "Falha ao cadastrar area.")}
+          onRemove={(id) => removerGenerico("/api/areas.php", id, "Falha ao remover area.")}
         />
       </section>
     </AppShell>

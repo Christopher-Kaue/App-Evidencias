@@ -3,7 +3,9 @@
 import { FormEvent, useEffect, useState } from "react";
 import { dedupeById } from "../../lib/dedupe-by-id";
 import { apiRequest } from "../../lib/api-fetch";
+import { useFlashMessage } from "../../lib/use-flash-message";
 import { AppShell } from "../components/AppShell";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { authHeaders, getSessionUser, SessionUser } from "../../lib/session";
 
 type Usuario = { id: number; nome: string; email?: string; celular: string; status?: "A" | "I"; perfil?: string };
@@ -13,7 +15,8 @@ export default function UsuariosPage() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [editando, setEditando] = useState<Usuario | null>(null);
   const [erro, setErro] = useState("");
-  const [sucesso, setSucesso] = useState("");
+  const { message: sucesso, showSuccess, clear: clearSucesso } = useFlashMessage();
+  const [confirmarExclusaoId, setConfirmarExclusaoId] = useState<number | null>(null);
 
   const carregar = async () => {
     const session = getSessionUser();
@@ -46,7 +49,7 @@ export default function UsuariosPage() {
     const fd = new FormData(form);
     const payload = Object.fromEntries(fd.entries());
     setErro("");
-    setSucesso("");
+    clearSucesso();
 
     if (editando && typeof payload.senha === "string" && payload.senha.trim() === "") {
       delete payload.senha;
@@ -75,7 +78,7 @@ export default function UsuariosPage() {
       }
 
       form.reset();
-      setSucesso(editando ? "Alteracao salva com sucesso." : "Usuario criado com sucesso.");
+      showSuccess();
       setEditando(null);
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Falha ao salvar usuario.");
@@ -85,8 +88,9 @@ export default function UsuariosPage() {
   const excluir = async (id: number) => {
     const session = getSessionUser();
     if (!session || session.perfil !== "coordenador") return;
+    setConfirmarExclusaoId(null);
     setErro("");
-    setSucesso("");
+    clearSucesso();
     const json = await apiRequest(`/api/users.php?id=${id}`, {
       method: "DELETE",
       headers: authHeaders(session)
@@ -96,17 +100,23 @@ export default function UsuariosPage() {
       return;
     }
     await carregar();
+    showSuccess("Excluido com sucesso.");
   };
 
   const iniciarEdicao = (usuario: Usuario) => {
     setErro("");
-    setSucesso("");
+    clearSucesso();
     setEditando(usuario);
   };
 
   return (
     <AppShell>
       <section className="grid">
+        {sucesso && (
+          <div className="card" style={{ padding: "12px 18px" }}>
+            <p className="success-text">{sucesso}</p>
+          </div>
+        )}
         {user?.perfil === "coordenador" && (
           <div className="card">
             <h2 style={{ marginTop: 0 }}>{editando ? "Editar usuario" : "Cadastro de usuario"}</h2>
@@ -146,7 +156,6 @@ export default function UsuariosPage() {
                 </label>
               )}
               <button className="btn" type="submit">{editando ? "Salvar alteracoes" : "Criar usuario"}</button>
-              {sucesso && <p className="success-text">{sucesso}</p>}
               {erro && <p className="error-text">{erro}</p>}
             </form>
           </div>
@@ -164,13 +173,23 @@ export default function UsuariosPage() {
               {user?.perfil === "coordenador" && (
                 <div className="row">
                   <button className="btn" onClick={() => iniciarEdicao(u)} type="button">Editar</button>
-                  <button className="btn danger" onClick={() => excluir(u.id)} type="button">Excluir</button>
+                  <button className="btn danger" onClick={() => setConfirmarExclusaoId(u.id)} type="button">
+                    Excluir
+                  </button>
                 </div>
               )}
             </div>
           ))}
         </div>
       </section>
+
+      <ConfirmDialog
+        open={confirmarExclusaoId !== null}
+        title="Excluir usuario"
+        message="Voce realmente deseja excluir este usuario?"
+        onConfirm={() => confirmarExclusaoId !== null && void excluir(confirmarExclusaoId)}
+        onCancel={() => setConfirmarExclusaoId(null)}
+      />
     </AppShell>
   );
 }

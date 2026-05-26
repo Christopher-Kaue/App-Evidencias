@@ -6,6 +6,8 @@ import PptxGenJS from "pptxgenjs";
 import { dedupeById } from "../../lib/dedupe-by-id";
 import { apiRequest } from "../../lib/api-fetch";
 import { AppShell } from "../components/AppShell";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { useFlashMessage } from "../../lib/use-flash-message";
 import { authHeaders, getSessionUser, SessionUser } from "../../lib/session";
 import fadergsLogo from "../assets/fadergs-logo.png";
 
@@ -28,7 +30,9 @@ export default function RelatoriosPage() {
   const [dados, setDados] = useState<Relatorio | null>(null);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [erro, setErro] = useState("");
+  const { message: sucesso, showSuccess, clear: clearSucesso } = useFlashMessage();
   const [editandoId, setEditandoId] = useState<number | null>(null);
+  const [confirmarExclusaoId, setConfirmarExclusaoId] = useState<number | null>(null);
   const [dataInicial, setDataInicial] = useState("");
   const [dataFinal, setDataFinal] = useState("");
   const [gerandoPpt, setGerandoPpt] = useState(false);
@@ -245,6 +249,8 @@ export default function RelatoriosPage() {
   const excluirRelatorio = async (id: number) => {
     const session = getSessionUser();
     if (!session || session.perfil !== "coordenador") return;
+    setConfirmarExclusaoId(null);
+    clearSucesso();
     const json = await apiRequest(`/api/reports.php?id=${id}`, {
       method: "DELETE",
       headers: authHeaders(session)
@@ -254,11 +260,13 @@ export default function RelatoriosPage() {
       return;
     }
     await carregar();
+    showSuccess("Excluido com sucesso.");
   };
 
   const salvarRelatorio = async (evento: Relatorio["eventos"][number]) => {
     const session = getSessionUser();
     if (!session || session.perfil !== "coordenador") return;
+    clearSucesso();
     const json = await apiRequest("/api/reports.php", {
       method: "PUT",
       headers: authHeaders(session),
@@ -269,6 +277,7 @@ export default function RelatoriosPage() {
       return;
     }
     setEditandoId(null);
+    showSuccess();
     await carregar();
   };
 
@@ -296,6 +305,7 @@ export default function RelatoriosPage() {
             </button>
           </div>
           {!dados && !erro && <p>Carregando...</p>}
+          {sucesso && <p className="success-text">{sucesso}</p>}
           {erro ? <p className="error-text">{erro}</p> : null}
           {dados && (
             <div className="grid grid-3">
@@ -361,7 +371,7 @@ export default function RelatoriosPage() {
                     <Link href="/eventos" className="btn" style={{ textDecoration: "none" }}>
                       Abrir Eventos
                     </Link>
-                    <button className="btn danger" type="button" onClick={() => excluirRelatorio(evento.id)}>
+                    <button className="btn danger" type="button" onClick={() => setConfirmarExclusaoId(evento.id)}>
                       Excluir
                     </button>
                   </div>
@@ -371,6 +381,14 @@ export default function RelatoriosPage() {
           </div>
         </div>
       </section>
+
+      <ConfirmDialog
+        open={confirmarExclusaoId !== null}
+        title="Excluir registro"
+        message="Voce realmente deseja excluir este evento do relatorio?"
+        onConfirm={() => confirmarExclusaoId !== null && void excluirRelatorio(confirmarExclusaoId)}
+        onCancel={() => setConfirmarExclusaoId(null)}
+      />
     </AppShell>
   );
 }

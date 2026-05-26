@@ -4,7 +4,9 @@ import { FormEvent, useEffect, useState } from "react";
 import { dedupeById } from "../../lib/dedupe-by-id";
 import { apiFetch, apiRequest, readApiJson } from "../../lib/api-fetch";
 import { AppShell } from "../components/AppShell";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { MediaPreview } from "../components/MediaPreview";
+import { useFlashMessage } from "../../lib/use-flash-message";
 import { getMediaType } from "../../lib/media-url";
 import { authHeaders, getSessionUser, SessionUser } from "../../lib/session";
 
@@ -68,10 +70,12 @@ export default function EventosPage() {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [erro, setErro] = useState("");
+  const { message: sucesso, showSuccess, clear: clearSucesso } = useFlashMessage();
   const [midias, setMidias] = useState<string[]>([]);
   const [capaEvento, setCapaEvento] = useState("");
   const [editando, setEditando] = useState<Evento | null>(null);
   const [confirmarExclusaoId, setConfirmarExclusaoId] = useState<number | null>(null);
+  const [confirmarRemoverMidia, setConfirmarRemoverMidia] = useState<{ url: string; index: number } | null>(null);
   const [conflitoMensagem, setConflitoMensagem] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -146,6 +150,7 @@ export default function EventosPage() {
     e.preventDefault();
     const form = e.currentTarget;
     setErro("");
+    clearSucesso();
 
     const fd = new FormData(form);
     const payload = {
@@ -197,6 +202,7 @@ export default function EventosPage() {
       setSalaSelecionada("");
       setAreaSelecionada("");
       setPublicoAlvoTexto("");
+      showSuccess();
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Falha ao salvar evento.");
     }
@@ -233,6 +239,7 @@ export default function EventosPage() {
         return;
       }
       await carregar();
+      showSuccess("Excluido com sucesso.");
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Falha ao excluir evento.");
     }
@@ -274,6 +281,7 @@ export default function EventosPage() {
   const removerMidia = (midiaParaRemover: string, indiceParaRemover: number) => {
     setMidias((prev) => prev.filter((midia, index) => index !== indiceParaRemover || midia !== midiaParaRemover));
     setCapaEvento((capaAtual) => (capaAtual === midiaParaRemover ? "" : capaAtual));
+    setConfirmarRemoverMidia(null);
   };
 
   return (
@@ -281,6 +289,7 @@ export default function EventosPage() {
       <section className="grid">
         <div className="card">
           <h2 style={{ marginTop: 0 }}>{editando ? "Editar evento" : "Cadastrar evento"}</h2>
+          {sucesso && <p className="success-text">{sucesso}</p>}
           <form onSubmit={onSubmit} className="grid">
             {editando && <input type="hidden" name="id" defaultValue={editando.id} />}
             <label>Nome<input name="nome" className="field" required defaultValue={editando?.nome ?? ""} /></label>
@@ -402,24 +411,20 @@ export default function EventosPage() {
                 <div style={{ marginTop: 8 }}>
                   <MediaPreview url={capaEvento} alt="Capa do evento" variant="full" />
                 </div>
-                <button className="btn danger" type="button" style={{ marginTop: 8 }} onClick={() => setCapaEvento("")}>
-                  Remover capa
-                </button>
                 <button
                   className="btn danger"
                   type="button"
-                  style={{ marginTop: 8, marginLeft: 8 }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const indice = midias.findIndex((midia) => midia === capaEvento);
+                  style={{ marginTop: 8 }}
+                  onClick={() => {
+                    const indice = midias.findIndex((m) => m === capaEvento);
                     if (indice >= 0) {
-                      removerMidia(capaEvento, indice);
+                      setConfirmarRemoverMidia({ url: capaEvento, index: indice });
                     } else {
                       setCapaEvento("");
                     }
                   }}
                 >
-                  Remover imagem
+                  Remover capa
                 </button>
               </div>
             )}
@@ -435,7 +440,7 @@ export default function EventosPage() {
                         style={{ padding: "6px 10px", fontSize: 13 }}
                         onClick={(e) => {
                           e.preventDefault();
-                          removerMidia(midia, index);
+                          setConfirmarRemoverMidia({ url: midia, index });
                         }}
                       >
                         Remover
@@ -533,22 +538,24 @@ export default function EventosPage() {
         </div>
       </section>
 
-      {confirmarExclusaoId !== null && (
-        <div className="confirm-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="confirmar-exclusao-titulo">
-          <div className="confirm-modal">
-            <h3 id="confirmar-exclusao-titulo">Excluir evento</h3>
-            <p>Voce realmente deseja excluir este evento?</p>
-            <div className="confirm-modal-actions">
-              <button className="btn danger" type="button" onClick={() => void excluir(confirmarExclusaoId)}>
-                Sim
-              </button>
-              <button className="btn" type="button" onClick={() => setConfirmarExclusaoId(null)}>
-                Nao
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={confirmarExclusaoId !== null}
+        title="Excluir evento"
+        message="Voce realmente deseja excluir este evento?"
+        onConfirm={() => confirmarExclusaoId !== null && void excluir(confirmarExclusaoId)}
+        onCancel={() => setConfirmarExclusaoId(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmarRemoverMidia !== null}
+        title="Remover anexo"
+        message="Voce realmente deseja remover esta imagem ou video?"
+        confirmLabel="Sim, remover"
+        onConfirm={() => {
+          if (confirmarRemoverMidia) removerMidia(confirmarRemoverMidia.url, confirmarRemoverMidia.index);
+        }}
+        onCancel={() => setConfirmarRemoverMidia(null)}
+      />
 
       {conflitoMensagem !== null && (
         <div className="confirm-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="conflito-evento-titulo">
